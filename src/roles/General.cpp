@@ -22,7 +22,7 @@ namespace coup {
         );
         
         attacker.set_must_coup(false);
-        attacker.clear_disable_to_arrest();
+        // attacker.clear_disable_to_arrest();
         attacker.set_last_action("undo_coup");
     }
 

@@ -46,6 +46,7 @@ public:
     GameGUI();
     void run();
     void setupButtons();
+    // void setupSpecialActionButtons();
     void drawPlayerList();
 };
 

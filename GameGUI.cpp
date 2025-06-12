@@ -140,6 +140,16 @@ void GameGUI::showTargetSelection(std::function<void(Player *)> action, bool inc
         targetButtons.push_back(btn);
         y += 50;
     }
+    // כפתור BACK
+
+    Button backBtn("Back", font, {150, 40}, {50, 650});
+    backBtn.setAction([this]()
+                      {
+    targetButtons.clear();
+    state = GUIState::InGame;
+    inGameError.clear();
+    actionMessage.clear(); });
+    targetButtons.push_back(backBtn);
 }
 
 void GameGUI::run()
@@ -279,7 +289,7 @@ void GameGUI::run()
             playerListTitle.setCharacterSize(18);
             playerListTitle.setFillColor(sf::Color::Blue);
             playerListTitle.setString("Players In Game:");
-            playerListTitle.setPosition(750, 470);
+            playerListTitle.setPosition(700, 470);
             window.draw(playerListTitle);
 
             // כותרת לפעולות מיוחדות
@@ -370,7 +380,7 @@ void GameGUI::setupButtons()
             Player* p = game.get_current_player();
             p->arrest(*target);
             p->set_last_action("arrest");
-            actionMessage = p->get_name() + " arrested " + target->get_name();
+            actionMessage = p->get_name() + " arrested " + target->get_name() + "! " + p->get_name() + " has " + std::to_string(p->get_coins()) + " coins.";
             inGameError.clear(); }, false, game.get_players()); });
 
     buttons.push_back(arrestBtn);
@@ -382,7 +392,7 @@ void GameGUI::setupButtons()
             Player* p = game.get_current_player();
             p->sanction(*target);
             p->set_last_action("sanction");
-            actionMessage = p->get_name() + " sanctioned " + target->get_name();
+            actionMessage = p->get_name() + " sanctioned " + target->get_name() + "! " + p->get_name() + " has " + std::to_string(p->get_coins()) + " coins.";
             inGameError.clear(); }, false, game.get_players()); });
     buttons.push_back(sanctionBtn);
 
@@ -407,6 +417,7 @@ void GameGUI::setupButtons()
             if (p->must_coup()) throw MustPerformCoupException();
             static_cast<Baron*>(p)->invest();
             p->set_last_action("invest");
+            actionMessage = p->get_name() + " Invested " + "! " + p->get_name() + " has " + std::to_string(p->get_coins()) + " coins.";
             inGameError.clear(); });
         buttons.push_back(investBtn);
     }
@@ -414,69 +425,87 @@ void GameGUI::setupButtons()
     // Special actions - top right corner
 
     // Undo Tax (by any active Governor)
-    Button undoTaxBtn("Undo Tax", font, sf::Vector2f(180, 35), sf::Vector2f(800, 50));
-    undoTaxBtn.setAction([this]()
-                         {
-    for (Player* p : game.get_players()) {
-        if (p->is_eliminated()) continue;
-        if (p->role() == "Governor") {
-            for (Player* other : game.get_players()) {
-                if (other != p && other->get_last_action() == "tax") {
-                    static_cast<Governor*>(p)->undo_tax(*other);
-                    actionMessage = p->get_name() + " canceled " + other->get_name() + "'s tax.";
-                    inGameError.clear();
-                    return;
-                }
-            }
-            inGameError = "No player found who performed tax.";
-            return;
-        }
-    }
-    inGameError = "No Governor available to undo tax."; });
-    buttons.push_back(undoTaxBtn);
+    float yPos = 50;
 
-    // Undo Bribe (by any active Judge)
-    Button undoBribeBtn("Undo Bribe", font, sf::Vector2f(180, 35), sf::Vector2f(800, 100));
-    undoBribeBtn.setAction([this]()
-                           {
-    for (Player* p : game.get_players()) {
-        if (p->is_eliminated()) continue;
-        if (p->role() == "Judge") {
-            for (Player* other : game.get_players()) {
-                if (other != p) {
-                    static_cast<Judge*>(p)->undo_bribe(*other);
-                    actionMessage = p->get_name() + " canceled " + other->get_name() + "'s bribe.";
-                    inGameError.clear();
+   for (Player* p : game.get_players()) {
+    if (p->role() == "Governor") {
+        Button undoTaxBtn("Undo Tax (" + p->get_name() + ")", font,
+                          sf::Vector2f(200, 35), sf::Vector2f(800, yPos));
+        yPos += 40;
+
+        undoTaxBtn.setAction([this, p]() {
+            try {
+                if (p->is_eliminated()) {
+                    inGameError = p->get_name() + " is eliminated.";
                     return;
                 }
+            
+                // חפש את השחקן האחרון שביצע tax, אבל לא p
+                std::string targetName = "";
+                const auto& history = game.get_action_history();
+                auto it = history.rbegin();
+
+                // דלג על פעולות tax של עצמו
+                while (it != history.rend()) {
+                    if (it->second == "tax" && it->first != p->get_name()) {
+                        targetName = it->first;
+                        break;
+                    }
+                    ++it;
+                }
+
+                if (targetName.empty()) {
+                    inGameError = "No recent tax action by another player to undo.";
+                    return;
+                }
+
+                Governor* gov = static_cast<Governor*>(p);
+                gov->undo_tax();  // מבצע על היעד האחרון
+                actionMessage = p->get_name() + " canceled " + targetName + "'s tax.";
+                inGameError.clear();
+            } catch (const std::exception& e) {
+                inGameError = e.what();
             }
-            inGameError = "No player found who performed bribe.";
-            return;
+        });
+
+        buttons.push_back(undoTaxBtn);
+    }
+}
+    // Undo Bribe (by any active Judge)
+    float yPoss = 100;
+
+    for (Player *p : game.get_players())
+    {
+        if (p->role() == "Judge")
+        {
+            Button judgeUndoBtn("Undo Bribe (" + p->get_name() + ")", font, sf::Vector2f(180, 35), sf::Vector2f(800, yPoss));
+            yPoss += 40;
+
+            judgeUndoBtn.setAction([this, p]()
+                                   {
+            try {
+                Player* current = game.get_current_player();
+                static_cast<Judge*>(p)->undo_bribe(*current);
+                actionMessage = p->get_name() + " canceled " + current->get_name() + "'s bribe.";
+                inGameError.clear();
+            } catch (const std::exception& e) {
+                inGameError = e.what();
+            } });
+
+            buttons.push_back(judgeUndoBtn);
         }
     }
-    inGameError = "No Judge available to undo bribe."; });
-    buttons.push_back(undoBribeBtn);
 
     // Peek & Arrest (by any active Spy)
     Button peekBtn("Peek & Arrest", font, sf::Vector2f(180, 35), sf::Vector2f(800, 150));
     peekBtn.setAction([this]()
-                      {
-    for (Player* p : game.get_players()) {
-        if (p->is_eliminated()) continue;
-        if (p->role() == "Spy") {
-            for (Player* other : game.get_players()) {
-                if (other != p && !other->is_eliminated()) {
-                    static_cast<Spy*>(p)->peek_and_arrest(*other);
-                    actionMessage = p->get_name() + " peeked and arrested " + other->get_name();
-                    inGameError.clear();
-                    return;
-                }
-            }
-            inGameError = "No valid target for Spy.";
-            return;
-        }
-    }
-    inGameError = "No Spy available to perform Peek & Arrest."; });
+                      { showTargetSelection([this](Player *target)
+                                            {
+            Player* p = game.get_current_player();
+            static_cast<Spy*>(p)->peek_and_arrest(*target);
+            actionMessage = p->get_name() + " peeked and arrested " + target->get_name();
+            inGameError.clear(); }, false, game.get_players()); });
+
     buttons.push_back(peekBtn);
 
     // Undo Coup (by any active General)
@@ -517,11 +546,15 @@ void GameGUI::setupButtons()
     Button newGameBtn("New Game", font, sf::Vector2f(150, 40), sf::Vector2f(800, 650));
     newGameBtn.setAction([this]()
                          {
-        game = Game();
-        tempNames.clear();
-        tempRoles.clear();
-        buttons.clear();
-        state = GUIState::Setup; });
+                             game = Game();           // אפס את מצב המשחק
+                             tempNames.clear();       // נקה שמות זמניים
+                             tempRoles.clear();       // נקה תפקידים זמניים
+                             buttons.clear();         // נקה כפתורים
+                             actionMessage.clear();   // נקה הודעות פעולה
+                             inGameError.clear();     // נקה הודעות שגיאה
+                             targetButtons.clear();   // נקה כפתורי מטרה אם קיימים
+                             state = GUIState::Setup; // חזור למסך הגדרות
+                         });
     buttons.push_back(newGameBtn);
 }
 
@@ -539,19 +572,20 @@ void GameGUI::drawPlayerList()
         {
             info.setFillColor(sf::Color(150, 150, 150));
         }
-        else if (p->is_sanctioned() && p->is_disable_to_arrest())
+
+        else if (p->is_sanctioned() && p->get_name() == game.get_last_arrested_name())
         {
-            info.setFillColor(sf::Color(255, 100, 0));
-            label += " [SANCTIONED, DISABLE TO ARREST]";
+            info.setFillColor(sf::Color(255, 255, 0));
+            label += " [BOTH]";
         }
         else if (p->is_sanctioned())
         {
-            info.setFillColor(sf::Color(255, 140, 0));
+            info.setFillColor(sf::Color(128, 0, 0));
             label += " [SANCTIONED]";
         }
-        else if (p->is_disable_to_arrest())
+        else if (p->get_name() == game.get_last_arrested_name())
         {
-            info.setFillColor(sf::Color(200, 0, 0));
+            info.setFillColor(sf::Color(255, 0, 0));
             label += " [DISABLE TO ARREST]";
         }
         else
@@ -560,7 +594,7 @@ void GameGUI::drawPlayerList()
         }
 
         info.setString(label);
-        info.setPosition(750, startY);
+        info.setPosition(700, startY);
         window.draw(info);
         startY += 25;
     }

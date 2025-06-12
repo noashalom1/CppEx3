@@ -3,32 +3,63 @@
 #include "Game.hpp"
 #include <iostream>
 
-namespace coup {
+namespace coup
+{
 
-    Governor::Governor(Game& game, const std::string& name) : Player(game, name) {}
+    Governor::Governor(Game &game, const std::string &name) : Player(game, name) {}
 
-    void Governor::tax() {
-        if (game.turn() != name) throw NotYourTurnException();
-        if (is_sanctioned()) {
-        throw SanctionedException();
+    void Governor::tax()
+    {
+        check_turn();
+        if (must_coup())
+            throw MustPerformCoupException();
+        if (is_sanctioned())
+        {
+            throw SanctionedException();
         }
         coins += 3;
+        game.get_action_history().emplace_back(name, "tax");
         game.next_turn();
     }
 
-    void Governor::undo_tax(Player& target) {
-        if (target.get_last_action() != "tax") {
-            throw UndoNotAllowedException();
-        }
-        if (target.is_eliminated()) throw TargetIsAlreadyEliminated();
-        if (target.get_name() == name) throw GameException("You cannot undo_tax yourself.");
+   void Governor::undo_tax() {
+    auto& history = game.get_action_history();
 
-        target.decrease_coins(2);
-        std::cout << "Governor canceled " << target.get_name() << "'s tax. 2 coins were removed." << std::endl;
-
+    if (!can_undo_tax()) {
+        throw GameException(name + " already used undo this round.");
     }
 
-    std::string Governor::role() const {
+    for (auto it = history.rbegin(); it != history.rend(); ++it) {
+        const std::string& targetName = it->first;
+        const std::string& action = it->second;
+
+        if (action == "tax") {
+            if (targetName == name) {
+                throw GameException("You cannot undo your own Tax.");
+            }
+
+            Player* target = game.get_player(targetName);
+            if (target->is_eliminated()) throw TargetIsAlreadyEliminated();
+
+            if (target->role() == "Governor") {
+                target->decrease_coins(3);
+            } else {
+                target->decrease_coins(2);
+            }
+
+            
+            history.erase(std::next(it).base());
+            mark_undo_tax_used();
+            std::cout << name << " canceled " << targetName << "'s tax." << std::endl;
+            return;
+        }
+    }
+
+    throw GameException("No recent tax by another player to undo.");
+}
+
+    std::string Governor::role() const
+    {
         return "Governor";
     }
 
