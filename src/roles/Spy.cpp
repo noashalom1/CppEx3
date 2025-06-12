@@ -11,7 +11,7 @@ namespace coup {
         return "Spy";
     }
 
-    void Spy::spy_peek(Player& target) {
+    void Spy::peek_and_arrest(Player& target) {
     std::cout << "[SPY] " << get_name() << " peeked at " << target.get_name()
               << " who has " << target.get_coins() << " coins.\n";
 

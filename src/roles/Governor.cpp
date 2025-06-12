@@ -13,6 +13,7 @@ namespace coup {
         throw SanctionedException();
         }
         coins += 3;
+        game.next_turn();
     }
 
     void Governor::undo_tax(Player& target) {

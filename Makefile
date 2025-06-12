@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++17
 
 # Include path
-INCLUDES = -Iinclude
+INCLUDES = -Iinclude -Iinclude/roles
 
 # SFML libraries
 LIBS = -lsfml-graphics -lsfml-window -lsfml-system
@@ -11,12 +11,12 @@ LIBS = -lsfml-graphics -lsfml-window -lsfml-system
 # Source files
 SRC = src/Game.cpp \
       src/Player.cpp \
-      src/Governor.cpp \
-      src/Spy.cpp \
-      src/Baron.cpp \
-      src/General.cpp \
-      src/Judge.cpp \
-      src/Merchant.cpp \
+      src/roles/Governor.cpp \
+      src/roles/Spy.cpp \
+      src/roles/Baron.cpp \
+      src/roles/General.cpp \
+      src/roles/Judge.cpp \
+      src/roles/Merchant.cpp \
       src/Button.cpp \
       src/TextBox.cpp \
       src/main_gui.cpp \

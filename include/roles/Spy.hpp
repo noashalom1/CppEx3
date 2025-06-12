@@ -9,7 +9,7 @@ namespace coup {
     public:
         Spy(Game& game, const std::string& name);
 
-        void spy_peek(Player& target);
+        void peek_and_arrest(Player& target);
 
         std::string role() const override;
     };

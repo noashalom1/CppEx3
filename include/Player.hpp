@@ -22,6 +22,8 @@ protected:
     std::string last_arrest_target;
     bool sanctioned = false;
     bool disable_to_arrest = false;
+    bool extra_turn = false;
+    bool has_done_bribe = false;
 
 public:
     Player(Game& game, const std::string& name);
@@ -31,12 +33,18 @@ public:
     int get_coins() const;
     virtual std::string role() const = 0;
     void check_turn() const;
+    void revive();
+    bool is_extra_turn() const { return extra_turn; }
+    void set_extra_turn(bool value) { extra_turn = value; }
+    void set_bribe_done(bool value) { has_done_bribe = value; }
+    bool is_bribe_done() const { return has_done_bribe; }
     virtual void gather();
     virtual void tax();
     virtual void bribe();
     virtual void arrest(Player& target);
     virtual void sanction(Player& target);
     virtual void coup(Player& target);
+
     void decrease_coins(int amount);
     void increase_coins(int amount);
 

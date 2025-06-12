@@ -12,6 +12,7 @@ class Game {
 private:
     std::vector<Player*> players_list;
     size_t turn_index = 0;
+    std::vector<std::pair<std::string, std::string>> coup_list;
 
 public:
     Game();
@@ -22,7 +23,9 @@ public:
 
     // מחזיר את שם השחקן שתורו
     std::string turn() const;
-
+    std::vector<std::pair<std::string, std::string>>& get_coup_list();
+    void add_to_coup(const std::string &attacker, const std::string &target);
+    
     // מחזיר רשימה של שמות כל השחקנים
     std::vector<std::string> players() const;
 
@@ -44,11 +47,6 @@ public:
     // מחזיר את השחקן הנוכחי שתורו
     Player* get_current_player();
 
-    // בדיקה אם יש גנרל שחוסם את ההפיכה
-    bool general_blocks_coup(Player* attacker, Player* target);
-
-    // מבטל פעולה של coup במידה וחסומה
-    void cancel_coup(Player* attacker, Player* target);
 
     // מסמן לשחקן שהוא חייב לבצע coup (אם יש לו ≥10 מטבעות)
     void check_force_coup(Player* current_player);

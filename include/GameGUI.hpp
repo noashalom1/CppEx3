@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
+#include <functional>
 #include "Button.hpp"
 #include "Game.hpp"
 #include "TextBox.hpp"
@@ -31,10 +32,11 @@ private:
     Game game;
 
     GUIState state = GUIState::Setup; 
-    void showTargetSelection(std::function<void(Player*)> action, bool includeCurrentPlayer = false);
+    void showTargetSelection(std::function<void(Player*)> action, bool includeCurrentPlayer = false, const std::vector<Player*>& targets = {});
     TextBox* nameBox;
     Button* addPlayerBtn;
     Button* startGameBtn;
+    Button* demoGameBtn;
     std::vector<std::string> tempNames;
     std::vector<std::string> tempRoles;
     std::vector<std::string> allRoles = {"Governor", "Spy", "Baron", "General", "Judge", "Merchant"};
