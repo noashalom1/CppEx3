@@ -8,7 +8,7 @@ namespace coup
 
     Judge::Judge(Game &game, const std::string &name) : Player(game, name) {}
 
-    void Judge::undo_bribe(Player &target)
+    std::string Judge::undo_bribe(Player &target)
     {
         if (is_eliminated())
         {
@@ -18,6 +18,11 @@ namespace coup
         if (!can_undo_bribe())
         {
             throw GameException(name + " already used undo this round.");
+        }
+
+        if(!target.is_used_bribe())
+        {
+            throw GameException(target.get_name() + " has not used bribe.");
         }
 
         if (&target == this)
@@ -30,14 +35,16 @@ namespace coup
             throw TargetIsAlreadyEliminated();
         }
 
+         std::string msg;
+
         if (target.get_extra_turns() == 1)
         {
-            std::cout << name << " has canceled " << target.get_name() << "'s bribe." << std::endl;
+            msg = name + " has canceled " + target.get_name() + "'s bribe.";
             target.set_extra_turns(0);
         }
         else if (target.get_extra_turns() == 0)
         {
-            std::cout << name << " has canceled " << target.get_name() << "'s bribe (after it took effect)." << std::endl;
+            msg = name + " has canceled " + target.get_name() + "'s bribe (after it took effect).";
             game.next_turn();
         }
         else
@@ -46,6 +53,7 @@ namespace coup
         }
 
         mark_undo_bribe_used();
+        return msg;
     }
 
     std::string Judge::role() const

@@ -46,6 +46,14 @@ GameGUI::GameGUI() : window(VideoMode(1000, 700), "Coup Interactive GUI")
             setupError = "Name cannot be empty";
             return;
         }
+
+        if (std::find(tempNames.begin(), tempNames.end(), name) != tempNames.end()) {
+            setupError = "Name already exists. Please choose a different one.";
+            nameBox->clear();
+            nameBox->setSelected(true);
+            return;
+        }
+        
         if (tempNames.size() >= 6) {
             setupError = "Cannot add more than 6 players";
             return;
@@ -82,7 +90,7 @@ GameGUI::GameGUI() : window(VideoMode(1000, 700), "Coup Interactive GUI")
                 return;
             }
             tempNames = {"Alice", "Bob", "Carol", "Dave", "Eve", "Frank"};
-            tempRoles = {"Spy", "Governor", "General", "Judge", "Baron", "Merchant"};
+            tempRoles = {"Governor", "Governor", "General", "Judge", "Baron", "Judge"};
             setupError.clear(); });
 }
 
@@ -337,6 +345,53 @@ void GameGUI::run()
         window.display();
     }
 }
+// פונקציה כללית להוספת כפתורי פעולות מיוחדות לפי תפקיד
+int GameGUI::addRoleActionButtons(const std::string &role,
+                                  const std::string &buttonPrefix,
+                                  float startY,
+                                  std::function<void(Player *)> actionPerPlayer)
+{
+    std::vector<Player *> rolePlayers;
+    for (Player *p : game.get_players())
+    {
+        if (p->role() == role)
+        {
+            rolePlayers.push_back(p);
+        }
+    }
+
+    if (rolePlayers.empty())
+    {
+        return 0; // אל תיצור כפתורים בכלל
+    }
+
+    float y = startY;
+    int count = 0;
+    for (Player *p : rolePlayers)
+    {
+        std::string label = buttonPrefix + " (" + p->get_name() + ")";
+        Button btn(label, font, sf::Vector2f(200, 35), sf::Vector2f(800, y));
+        y += 40;
+        count++;
+
+        btn.setAction([this, p, actionPerPlayer]()
+                      {
+            try {
+                if (p->is_eliminated()) {
+                    inGameError = p->get_name() + " is eliminated.";
+                    return;
+                }
+                actionPerPlayer(p);
+            } catch (const std::exception& e) {
+                inGameError = e.what();
+                actionMessage.clear();
+            } });
+
+        buttons.push_back(btn);
+    }
+
+    return count;
+}
 
 void GameGUI::setupButtons()
 {
@@ -377,11 +432,18 @@ void GameGUI::setupButtons()
     arrestBtn.setAction([this]()
                         { showTargetSelection([this](Player *target)
                                               {
+        try {
             Player* p = game.get_current_player();
-            p->arrest(*target);
+            p->arrest(*target);  // יכולה לזרוק שגיאה
+
             p->set_last_action("arrest");
-            actionMessage = p->get_name() + " arrested " + target->get_name() + "! " + p->get_name() + " has " + std::to_string(p->get_coins()) + " coins.";
-            inGameError.clear(); }, false, game.get_players()); });
+            actionMessage = p->get_name() + " arrested " + target->get_name() +
+                            "! " + p->get_name() + " has " + std::to_string(p->get_coins()) + " coins.";
+            inGameError.clear();
+        } catch (const std::exception& e) {
+            inGameError = e.what();     // תופס את השגיאה מתוך arrest
+            actionMessage.clear();
+        } }, false, game.get_players()); });
 
     buttons.push_back(arrestBtn);
 
@@ -424,124 +486,87 @@ void GameGUI::setupButtons()
 
     // Special actions - top right corner
 
-    // Undo Tax (by any active Governor)
-    float yPos = 50;
+    float y = 50;
 
-   for (Player* p : game.get_players()) {
-    if (p->role() == "Governor") {
-        Button undoTaxBtn("Undo Tax (" + p->get_name() + ")", font,
-                          sf::Vector2f(200, 35), sf::Vector2f(800, yPos));
-        yPos += 40;
-
-        undoTaxBtn.setAction([this, p]() {
-            try {
-                if (p->is_eliminated()) {
-                    inGameError = p->get_name() + " is eliminated.";
-                    return;
-                }
-            
-                // חפש את השחקן האחרון שביצע tax, אבל לא p
-                std::string targetName = "";
-                const auto& history = game.get_action_history();
-                auto it = history.rbegin();
-
-                // דלג על פעולות tax של עצמו
-                while (it != history.rend()) {
-                    if (it->second == "tax" && it->first != p->get_name()) {
-                        targetName = it->first;
-                        break;
-                    }
-                    ++it;
-                }
-
-                if (targetName.empty()) {
-                    inGameError = "No recent tax action by another player to undo.";
-                    return;
-                }
-
-                Governor* gov = static_cast<Governor*>(p);
-                gov->undo_tax();  // מבצע על היעד האחרון
-                actionMessage = p->get_name() + " canceled " + targetName + "'s tax.";
-                inGameError.clear();
-            } catch (const std::exception& e) {
-                inGameError = e.what();
-            }
-        });
-
-        buttons.push_back(undoTaxBtn);
-    }
-}
-    // Undo Bribe (by any active Judge)
-    float yPoss = 100;
-
-    for (Player *p : game.get_players())
-    {
-        if (p->role() == "Judge")
-        {
-            Button judgeUndoBtn("Undo Bribe (" + p->get_name() + ")", font, sf::Vector2f(180, 35), sf::Vector2f(800, yPoss));
-            yPoss += 40;
-
-            judgeUndoBtn.setAction([this, p]()
+    // Governor: Undo Tax
+    y += 40 * addRoleActionButtons("Governor", "Undo Tax", y, [this](Player *p)
                                    {
-            try {
-                Player* current = game.get_current_player();
-                static_cast<Judge*>(p)->undo_bribe(*current);
-                actionMessage = p->get_name() + " canceled " + current->get_name() + "'s bribe.";
-                inGameError.clear();
-            } catch (const std::exception& e) {
-                inGameError = e.what();
-            } });
-
-            buttons.push_back(judgeUndoBtn);
+        std::string targetName = "";
+        const auto& history = game.get_action_history();
+        for (auto it = history.rbegin(); it != history.rend(); ++it) {
+            if (it->second == "tax" && it->first != p->get_name()) {
+                targetName = it->first;
+                break;
+            }
         }
-    }
-
-    // Peek & Arrest (by any active Spy)
-    Button peekBtn("Peek & Arrest", font, sf::Vector2f(180, 35), sf::Vector2f(800, 150));
-    peekBtn.setAction([this]()
-                      { showTargetSelection([this](Player *target)
-                                            {
-            Player* p = game.get_current_player();
-            static_cast<Spy*>(p)->peek_and_arrest(*target);
-            actionMessage = p->get_name() + " peeked and arrested " + target->get_name();
-            inGameError.clear(); }, false, game.get_players()); });
-
-    buttons.push_back(peekBtn);
-
-    // Undo Coup (by any active General)
-    Button undoCoupBtn("Undo Coup", font, sf::Vector2f(180, 35), sf::Vector2f(800, 200));
-    undoCoupBtn.setAction([this]()
-                          {
-    for (Player* p : game.get_players()) {
-        if (p->role() == "General") {
-            std::vector<Player*> targets;
-            for (const auto& entry : game.get_coup_list()) {
-                const std::string& target_name = entry.second;
-                try {
-                    Player* target = game.get_player(target_name);
-                    targets.push_back(target);
-                } catch (const PlayerNotFoundException&) {}
-            }
-
-            if (targets.empty()) {
-                inGameError = "No couped targets to undo.";
-                return;
-            }
-
-            showTargetSelection(
-                [this, p](Player* target) {
-                    static_cast<General*>(p)->undo_coup(*p, *target);
-                    actionMessage = p->get_name() + " undid coup on " + target->get_name();
-                    inGameError.clear();
-                },
-                false,
-                targets
-            );
+        if (targetName.empty()) {
+            inGameError = "No recent tax action by another player to undo.";
             return;
         }
-    }
-    inGameError = "No General available to undo coup."; });
-    buttons.push_back(undoCoupBtn);
+        static_cast<Governor*>(p)->undo_tax();
+        actionMessage = p->get_name() + " canceled " + targetName + "'s tax.";
+        inGameError.clear(); });
+
+    // Judge: Undo Bribe
+    y += 40 * addRoleActionButtons("Judge", "Undo Bribe", y, [this](Player *p)
+                                   {
+    try {
+        Player* current = game.get_current_player();
+        std::string msg = static_cast<Judge*>(p)->undo_bribe(*current);
+        actionMessage = msg;
+        inGameError.clear();
+    } catch (const std::exception& e) {
+        inGameError = e.what();
+        actionMessage.clear();
+    } });
+
+    // Spy: Peek and Disable
+    y += 40 * addRoleActionButtons("Spy", "Peek and Disable", y, [this](Player *p)
+                                   { showTargetSelection(
+                                         [this, p](Player *target)
+                                         {
+                                             try
+                                             {
+                                                 Spy *spy = static_cast<Spy *>(p);
+                                                 std::string result = spy->peek_and_disable(*target);
+                                                 actionMessage = result;
+                                                 inGameError.clear();
+                                             }
+                                             catch (const std::exception &e)
+                                             {
+                                                 inGameError = e.what();
+                                                 actionMessage.clear();
+                                             }
+                                         },
+                                         false,
+                                         game.get_players()); });
+
+    // General: Undo Coup
+    y += 40 * addRoleActionButtons("General", "Undo Coup", y, [this](Player *p)
+                                   {
+        std::vector<Player*> targets;
+        for (const auto& entry : game.get_coup_list()) {
+            const std::string& target_name = entry.second;
+            try {
+                Player* target = game.get_player(target_name);
+                targets.push_back(target);
+            } catch (...) {}
+        }
+
+        if (targets.empty()) {
+            inGameError = "No couped targets to undo.";
+            return;
+        }
+
+        showTargetSelection(
+            [this, p](Player* target) {
+                static_cast<General*>(p)->undo_coup(*p, *target);
+                actionMessage = p->get_name() + " undid coup on " + target->get_name();
+                inGameError.clear();
+            },
+            false,
+            targets
+        ); });
 
     Button newGameBtn("New Game", font, sf::Vector2f(150, 40), sf::Vector2f(800, 650));
     newGameBtn.setAction([this]()

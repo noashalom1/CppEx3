@@ -46,7 +46,11 @@ public:
     GameGUI();
     void run();
     void setupButtons();
-    // void setupSpecialActionButtons();
+    int addRoleActionButtons(const std::string &role,
+                         const std::string &buttonPrefix,
+                         float startY,
+                         std::function<void(Player *)> actionPerPlayer);
+
     void drawPlayerList();
 };
 

@@ -69,8 +69,8 @@ namespace coup
         if (coins < 4)
             throw NotEnoughCoinsException(4, coins);
         coins -= 4;
-        extra_turns = 2; 
-        // set_last_action("bribe");
+        extra_turns = 2;
+        mark_used_bribe();
         game.next_turn();
     }
 
@@ -79,6 +79,8 @@ namespace coup
         check_turn();
         if (must_coup())
             throw MustPerformCoupException();
+        if (is_disable_to_arrest())
+            throw GameException("You are blocked from using ARREST this turn.");
         if (target.get_name() == game.get_last_arrested_name())
             throw DuplicateArrestException();
         if (target.is_eliminated())

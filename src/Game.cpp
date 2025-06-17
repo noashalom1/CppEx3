@@ -94,12 +94,14 @@ namespace coup
             return;
         if (get_current_player()->is_extra_turn())
         {
+
             int turns = get_current_player()->get_extra_turns();
             // אם השחקן הנוכחי קיבל תור נוסף, הוא לא עובר לתור הבא
             turns--;
             get_current_player()->set_extra_turns(turns);
             return;
         }
+        Player *prev_player = get_current_player(); // נשמור את השחקן שלפני שינוי turn_index
         size_t prev_index = turn_index;
 
         // advance to next living player
@@ -115,7 +117,7 @@ namespace coup
                 {
                     static_cast<Judge *>(p)->reset_undo_bribe_flag();
                 }
-                if(p->role() == "Govrnor")
+                if (p->role() == "Govrnor")
                 {
                     static_cast<Governor *>(p)->reset_undo_tax_flag();
                 }
@@ -123,11 +125,10 @@ namespace coup
                 // {
                 //     static_cast<General *>(p)->reset_undo_coup_flag();
                 // }
-                // if(p->role() == "Spy")
-                // {
-                //     static_cast<Spy *>(p)->reset_undo_spy_flag();
-                // }
-                
+                if (p->role() == "Spy")
+                {
+                    static_cast<Spy *>(p)->reset_peek_and_disable_flag();
+                }
             }
         }
 
@@ -151,9 +152,20 @@ namespace coup
                 ++it;
             }
         }
-
+        current->set_last_action("");
         current->start_new_turn();
+
+        if (prev_player->get_disable_arrest_turns() > 0)
+        {
+            prev_player->set_disable_arrest_turns(prev_player->get_disable_arrest_turns() - 1);
+            if (prev_player->get_disable_arrest_turns() == 0)
+            {
+                prev_player->set_disable_to_arrest(false);
+                std::cout << prev_player->get_name() << " is no longer blocked from ARREST." << std::endl;
+            }
+        }
     }
+
     void Game::check_force_coup(Player *current_player)
     {
         // מבוטל: הלוגיקה מועברת לGUI והשחקן חופשי לבחור מטרה
