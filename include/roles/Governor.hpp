@@ -12,7 +12,7 @@ namespace coup {
         Governor(Game& game, const std::string& name);
 
         void tax();
-        void undo_tax();
+        std::string undo_tax();
         std::string role() const override;
         bool can_undo_tax() const { return !used_undo_this_round; }
         void mark_undo_tax_used() { used_undo_this_round = true; }

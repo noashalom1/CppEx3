@@ -13,21 +13,29 @@ namespace coup
     class Game
     {
     private:
-        std::vector<Player *> players_list;
+        std::vector<Player *> players_list; // צריכה לעבור על הקוד ולהוריד איפה שיש- כי זה סתם בדיקות כפולות של אם יש שחקנים חיים
         size_t turn_index = 0;
+
+        // bool waiting_for_next_turn = false; // האם צריך ללחוץ NEXT TURN
+
         std::vector<std::pair<std::string, std::string>> coup_list;
         std::string last_arrested_name;
         std::string last_tax_player_name;
         std::map<std::string, std::pair<std::string, int>> last_actions;
-        std::vector<std::pair<std::string, std::string>> action_history; // {player name, action}
+        std::vector<std::tuple<std::string, std::string, int>> action_history; // שם שחקן, פעולה, מספר סבב
+        int current_round = 1;
+
     public:
         Game();
         ~Game();
 
         // מוסיף שחקן למשחק (כל עוד יש מקום)
         void add_player(Player *player);
-        std::vector<std::pair<std::string, std::string>>& get_action_history() {
-        return action_history;}
+        std::vector<std::tuple<std::string, std::string, int>> &get_action_history()
+        {
+            return action_history;
+        }
+        int get_current_round() const { return current_round; }
         // מחזיר את שם השחקן שתורו
         std::string turn() const;
         std::vector<std::pair<std::string, std::string>> &get_coup_list();
@@ -35,6 +43,10 @@ namespace coup
 
         // מחזיר רשימה של שמות כל השחקנים
         std::vector<std::string> players() const;
+
+        // bool is_waiting_for_next_turn() const { return waiting_for_next_turn; }
+        // void mark_waiting_for_next_turn() { waiting_for_next_turn = true; }
+        // void clear_waiting_for_next_turn() { waiting_for_next_turn = false; }
 
         // מחזיר את שם המנצח אם יש אחד בלבד
         std::string winner() const;
@@ -62,7 +74,7 @@ namespace coup
 
         void set_last_tax_player_name(const std::string &name);
         const std::string &get_last_tax_player_name() const;
-        std::map<std::string, std::pair<std::string, int>>& get_last_actions() { return last_actions; }
+        std::map<std::string, std::pair<std::string, int>> &get_last_actions() { return last_actions; }
         int get_num_players() const { return static_cast<int>(players_list.size()); }
     };
 

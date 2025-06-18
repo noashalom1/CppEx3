@@ -17,11 +17,10 @@ namespace coup
 
     Game::~Game() {}
 
-    const std::vector<Player *> &Game::get_players() const
+    const std::vector<Player *> &Game::get_players() const // גם לדאוג להוריד איפה שיש
     {
         return players_list;
     }
-
     void Game::add_player(Player *player)
     {
         if (players_list.size() >= 6)
@@ -111,20 +110,21 @@ namespace coup
         } while (players_list[turn_index]->is_eliminated());
         if (turn_index == 0 || turn_index < prev_index)
         { // סיבוב חדש התחיל
+            current_round++;
             for (Player *p : players_list)
             {
                 if (p->role() == "Judge")
                 {
                     static_cast<Judge *>(p)->reset_undo_bribe_flag();
                 }
-                if (p->role() == "Govrnor")
+                if (p->role() == "Governor")
                 {
                     static_cast<Governor *>(p)->reset_undo_tax_flag();
                 }
-                // if (p->role() == "General")
-                // {
-                //     static_cast<General *>(p)->reset_undo_coup_flag();
-                // }
+                if (p->role() == "General")
+                {
+                    static_cast<General *>(p)->reset_undo_coup_flag();
+                }
                 if (p->role() == "Spy")
                 {
                     static_cast<Spy *>(p)->reset_peek_and_disable_flag();
@@ -164,6 +164,8 @@ namespace coup
                 std::cout << prev_player->get_name() << " is no longer blocked from ARREST." << std::endl;
             }
         }
+        // ✅ איפוס הדגל – עברנו תור
+        // waiting_for_next_turn = false;
     }
 
     void Game::check_force_coup(Player *current_player)

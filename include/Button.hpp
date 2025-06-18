@@ -9,6 +9,7 @@ private:
     sf::RectangleShape shape;
     sf::Text label;
     std::function<void()> action;
+    std::string labelText;
 
 public:
     Button(const std::string& text, const sf::Font& font,
@@ -18,6 +19,7 @@ public:
     void draw(sf::RenderWindow& window) const;
     bool contains(float x, float y) const;
     void execute();
+    const std::string& getLabel() const;
 };
 
 #endif

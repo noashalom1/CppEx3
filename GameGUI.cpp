@@ -21,6 +21,8 @@ namespace
     std::vector<std::string> allRoles = {"Governor", "Spy", "Baron", "General", "Judge", "Merchant"};
     std::string setupError;
     std::string actionMessage;
+    std::string winnerMessage;
+    bool showVictory = false;
 
     std::string randomRole()
     {
@@ -173,6 +175,7 @@ void GameGUI::run()
             {
                 float x = event.mouseButton.x;
                 float y = event.mouseButton.y;
+
                 if (state == GUIState::Setup)
                 {
                     if (addPlayerBtn->contains(x, y))
@@ -183,7 +186,7 @@ void GameGUI::run()
                         demoGameBtn->execute();
                     nameBox->setSelected(nameBox->getText().empty());
                 }
-                else if (state == GUIState::InGame)
+                else if (state == GUIState::InGame && !showVictory)
                 {
                     for (Button &btn : buttons)
                     {
@@ -225,6 +228,17 @@ void GameGUI::run()
                         }
                     }
                 }
+                else if (showVictory)
+                {
+                    for (Button &btn : buttons)
+                    {
+                        if (btn.getLabel() == "New Game" && btn.contains(x, y))
+                        {
+                            btn.execute();
+                            break;
+                        }
+                    }
+                }
             }
             else if (event.type == Event::TextEntered)
             {
@@ -234,6 +248,23 @@ void GameGUI::run()
         }
 
         window.clear(Color(50, 50, 50));
+
+        // ✅ בדיקת ניצחון רק אם עוד לא זוהה ניצחון
+        if (!showVictory)
+        {
+            try
+            {
+                std::string winner = game.winner();
+                winnerMessage = " The winner is: " + winner + "!";
+                showVictory = true;
+            }
+            catch (...)
+            {
+                showVictory = false;
+                winnerMessage.clear();
+            }
+        }
+
         if (state == GUIState::Setup)
         {
             nameBox->draw(window);
@@ -279,7 +310,6 @@ void GameGUI::run()
             header.setPosition(300, 20);
             window.draw(header);
 
-            // הודעה על פעולה שבוצעה
             if (!actionMessage.empty())
             {
                 sf::Text msgText;
@@ -291,46 +321,40 @@ void GameGUI::run()
                 window.draw(msgText);
             }
 
-            // כותרת לרשימת שחקנים
-            sf::Text playerListTitle;
-            playerListTitle.setFont(font);
-            playerListTitle.setCharacterSize(18);
-            playerListTitle.setFillColor(sf::Color::Blue);
-            playerListTitle.setString("Players In Game:");
-            playerListTitle.setPosition(700, 470);
-            window.draw(playerListTitle);
+            drawPlayerList();
 
-            // כותרת לפעולות מיוחדות
-            sf::Text specialTitle;
-            specialTitle.setFont(font);
-            specialTitle.setCharacterSize(18);
-            specialTitle.setFillColor(sf::Color::Blue);
-            specialTitle.setString("Special Actions:");
-            specialTitle.setPosition(800, 20);
-            window.draw(specialTitle);
-
-            if (state == GUIState::InGame && targetButtons.empty())
+            if (showVictory)
             {
-                buttons.clear();
-                setupButtons();
-            }
+                sf::Text victoryText;
+                victoryText.setFont(font);
+                victoryText.setCharacterSize(28);
+                victoryText.setFillColor(sf::Color::Green);
+                victoryText.setStyle(sf::Text::Bold);
+                victoryText.setString(winnerMessage);
+                victoryText.setPosition(250, 300);
+                window.draw(victoryText);
 
-            if (state == GUIState::InGame)
-            {
                 for (const Button &btn : buttons)
                 {
-                    btn.draw(window);
+                    if (btn.getLabel() == "New Game")
+                    {
+                        btn.draw(window);
+                        break;
+                    }
                 }
             }
+            else if (state == GUIState::InGame)
+            {
+                for (const Button &btn : buttons)
+                    btn.draw(window);
+            }
 
-            drawPlayerList();
             if (state == GUIState::TargetSelection)
             {
                 for (const Button &btn : targetButtons)
-                {
                     btn.draw(window);
-                }
             }
+
             if (!inGameError.empty())
             {
                 sf::Text errText;
@@ -342,9 +366,12 @@ void GameGUI::run()
                 window.draw(errText);
             }
         }
+
         window.display();
     }
 }
+
+
 // פונקציה כללית להוספת כפתורי פעולות מיוחדות לפי תפקיד
 int GameGUI::addRoleActionButtons(const std::string &role,
                                   const std::string &buttonPrefix,
@@ -370,7 +397,7 @@ int GameGUI::addRoleActionButtons(const std::string &role,
     for (Player *p : rolePlayers)
     {
         std::string label = buttonPrefix + " (" + p->get_name() + ")";
-        Button btn(label, font, sf::Vector2f(200, 35), sf::Vector2f(800, y));
+        Button btn(label, font, sf::Vector2f(190, 35), sf::Vector2f(800, y));
         y += 40;
         count++;
 
@@ -491,21 +518,14 @@ void GameGUI::setupButtons()
     // Governor: Undo Tax
     y += 40 * addRoleActionButtons("Governor", "Undo Tax", y, [this](Player *p)
                                    {
-        std::string targetName = "";
-        const auto& history = game.get_action_history();
-        for (auto it = history.rbegin(); it != history.rend(); ++it) {
-            if (it->second == "tax" && it->first != p->get_name()) {
-                targetName = it->first;
-                break;
-            }
-        }
-        if (targetName.empty()) {
-            inGameError = "No recent tax action by another player to undo.";
-            return;
-        }
-        static_cast<Governor*>(p)->undo_tax();
-        actionMessage = p->get_name() + " canceled " + targetName + "'s tax.";
-        inGameError.clear(); });
+    try {
+        std::string msg = static_cast<Governor*>(p)->undo_tax();  // ← קיבלנו הודעה מהמנוע
+        actionMessage = msg;
+        inGameError.clear();
+    } catch (const std::exception& e) {
+        inGameError = e.what();
+        actionMessage.clear();
+    } });
 
     // Judge: Undo Bribe
     y += 40 * addRoleActionButtons("Judge", "Undo Bribe", y, [this](Player *p)
@@ -544,29 +564,28 @@ void GameGUI::setupButtons()
     // General: Undo Coup
     y += 40 * addRoleActionButtons("General", "Undo Coup", y, [this](Player *p)
                                    {
-        std::vector<Player*> targets;
-        for (const auto& entry : game.get_coup_list()) {
-            const std::string& target_name = entry.second;
+    // מקבל את רשימת הקורבנות מהמכונה עצמה
+    std::vector<Player*> targets;
+    for (const auto& entry : game.get_coup_list()) {
+        try {
+            Player* target = game.get_player(entry.second);
+            targets.push_back(target);
+        } catch (...) {}
+    }
+
+    showTargetSelection(
+        [this, p](Player* target) {
             try {
-                Player* target = game.get_player(target_name);
-                targets.push_back(target);
-            } catch (...) {}
-        }
-
-        if (targets.empty()) {
-            inGameError = "No couped targets to undo.";
-            return;
-        }
-
-        showTargetSelection(
-            [this, p](Player* target) {
-                static_cast<General*>(p)->undo_coup(*p, *target);
-                actionMessage = p->get_name() + " undid coup on " + target->get_name();
+                std::string result = static_cast<General*>(p)->undo_coup(*p, *target);
+                actionMessage = result;
                 inGameError.clear();
-            },
-            false,
-            targets
-        ); });
+            } catch (const std::exception& ex) {
+                inGameError = ex.what();  // הצגת שגיאה בלבד
+            }
+        },
+        false,
+        targets
+    ); });
 
     Button newGameBtn("New Game", font, sf::Vector2f(150, 40), sf::Vector2f(800, 650));
     newGameBtn.setAction([this]()

@@ -2,6 +2,8 @@
 
 Button::Button(const std::string& text, const sf::Font& font,
                const sf::Vector2f& size, const sf::Vector2f& position) {
+    labelText = text; // שמירת טקסט הכפתור
+
     shape.setSize(size);
     shape.setPosition(position);
     shape.setFillColor(sf::Color(200, 200, 200));
@@ -39,4 +41,8 @@ void Button::execute() {
     if (action) {
         action();
     }
+}
+
+const std::string& Button::getLabel() const {
+    return labelText;
 }
