@@ -90,7 +90,7 @@ GameGUI::GameGUI() : window(VideoMode(1000, 700), "Coup Interactive GUI")
                 return;
             }
             tempNames = {"Alice", "Bob", "Carol", "Dave", "Eve", "Frank"};
-            tempRoles = {"Governor", "Governor", "General", "Judge", "Baron", "Judge"};
+            tempRoles = {"Spy", "Governor", "General", "Judge", "Baron", "Merchant"};
             setupError.clear(); });
 }
 
