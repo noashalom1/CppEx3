@@ -23,9 +23,17 @@ namespace coup
         game.next_turn();
     }
 
-    bool Governor::can_undo_tax()
+    void Governor::can_undo_tax() const
     {
-       
+        if (is_eliminated())
+        {
+            throw GameException(name + " is eliminated.");
+        }
+        if (used_undo_this_round)
+        {
+            throw GameException(name + " has already used undo this round.");
+        }
+               
     }
 
     std::string Governor::undo_tax()
