@@ -56,6 +56,13 @@ namespace coup
             // נחפש רק tax, רק מסבב נוכחי, ורק לא של השחקן שמבצע את undo
             if (action == "tax")
             {
+                if((global_turn - round) > (players_count - 1)){
+                    throw GameException(name + " Already used undo this round.");
+                }
+
+                if(name == actor){
+                    throw GameException(name + " cannot undo their own tax.");
+                }
                 Player *target = game.get_player(actor);
                 if (target->is_eliminated())
                 {
