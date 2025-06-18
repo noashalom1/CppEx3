@@ -19,7 +19,13 @@ namespace coup
         }
         coins += 3;
         game.get_action_history().emplace_back(name, "tax", game.get_current_round());
+        game.get_tax_turns()[name] = game.get_global_turn_index(); // עדכון סבב המס האחרון
         game.next_turn();
+    }
+
+    bool Governor::can_undo_tax()
+    {
+       
     }
 
     std::string Governor::undo_tax()
@@ -29,22 +35,18 @@ namespace coup
             throw GameException(name + " is eliminated.");
         }
 
-        if (!can_undo_tax())
-        {
-            throw GameException(name + " already used undo this round.");
-        }
-        
+        can_undo_tax();
         auto &history = game.get_action_history();
-        int currentRound = game.get_current_round();
+        int global_turn = game.get_global_turn_index();
+        int players_count = game.get_active_players_count();
 
         for (auto it = history.rbegin(); it != history.rend(); ++it)
         {
             const std::string &actor = std::get<0>(*it);
             const std::string &action = std::get<1>(*it);
-            int round = std::get<2>(*it);
-
+            int round = game.get_tax_turns()[actor];
             // נחפש רק tax, רק מסבב נוכחי, ורק לא של השחקן שמבצע את undo
-            if (action == "tax" && actor != name && round == currentRound)
+            if (action == "tax")
             {
                 Player *target = game.get_player(actor);
                 if (target->is_eliminated())

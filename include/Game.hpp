@@ -15,6 +15,8 @@ namespace coup
     private:
         std::vector<Player *> players_list; // צריכה לעבור על הקוד ולהוריד איפה שיש- כי זה סתם בדיקות כפולות של אם יש שחקנים חיים
         size_t turn_index = 0;
+        size_t global_turn_index = 0; // אינדקס גלובלי לסבב הנוכחי, לא תלוי בשחקן
+        std::map<std::string, int > tax_turns;
 
         // bool waiting_for_next_turn = false; // האם צריך ללחוץ NEXT TURN
 
@@ -36,11 +38,13 @@ namespace coup
             return action_history;
         }
         int get_current_round() const { return current_round; }
+        int get_active_players_count() const;
         // מחזיר את שם השחקן שתורו
         std::string turn() const;
         std::vector<std::pair<std::string, std::string>> &get_coup_list();
+        std::map<std::string, int > &get_tax_turns();
         void add_to_coup(const std::string &attacker, const std::string &target);
-
+        size_t get_global_turn_index() const { return global_turn_index; }
         // מחזיר רשימה של שמות כל השחקנים
         std::vector<std::string> players() const;
 

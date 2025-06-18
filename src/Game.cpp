@@ -36,10 +36,27 @@ namespace coup
         }
         players_list.push_back(player);
     }
+    int Game ::get_active_players_count() const
+    {
+        int count = 0;
+        for (const auto &p : players_list)
+        {
+            if (!p->is_eliminated())
+            {
+                count++;
+            }
+        }
+        return count;
+    }
 
     std::vector<std::pair<std::string, std::string>> &Game::get_coup_list()
     {
         return coup_list;
+    }
+
+     std::map<std::string, int > &Game::get_tax_turns()
+    {
+        return tax_turns;
     }
 
     void Game::add_to_coup(const std::string &attacker, const std::string &target)
@@ -108,7 +125,8 @@ namespace coup
         {
             turn_index = (turn_index + 1) % players_list.size();
         } while (players_list[turn_index]->is_eliminated());
-        if (turn_index == 0 || turn_index < prev_index)
+        global_turn_index++;
+        if (turn_index == 0)
         { // סיבוב חדש התחיל
             current_round++;
             for (Player *p : players_list)

@@ -57,6 +57,7 @@ namespace coup
             throw SanctionedException();
         coins += 2;
         game.get_action_history().emplace_back(name, "tax", game.get_current_round());
+        game.get_tax_turns()[name] = game.get_global_turn_index();
         game.next_turn();
     }
 
