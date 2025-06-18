@@ -2,19 +2,24 @@
 #include "Game.hpp"
 #include "exceptions.hpp"
 
-namespace coup {
+namespace coup
+{
 
-    Baron::Baron(Game& game, const std::string& name) : Player(game, name) {}
+    Baron::Baron(Game &game, const std::string &name) : Player(game, name) {}
 
-    void Baron::invest() {
+    void Baron::invest()
+    {
         check_turn();
-        if (must_coup()) throw MustPerformCoupException();
-        if (coins < 3) throw NotEnoughCoinsException(3, coins);
+        if (must_coup())
+            throw MustPerformCoupException();
+        if (coins < 3)
+            throw NotEnoughCoinsException(3, coins);
         coins += 3;
         game.next_turn();
     }
 
-    std::string Baron::role() const{
+    std::string Baron::role() const
+    {
         return "Baron";
     }
 

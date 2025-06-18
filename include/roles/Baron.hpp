@@ -3,12 +3,13 @@
 
 #include "Player.hpp"
 
-namespace coup {
+namespace coup
+{
 
-    class Baron : public Player {
+    class Baron : public Player
+    {
     public:
-        Baron(Game& game, const std::string& name);
-
+        Baron(Game &game, const std::string &name);
         void invest();
         std::string role() const override;
     };
