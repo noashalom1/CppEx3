@@ -54,7 +54,7 @@ namespace coup
         return coup_list;
     }
 
-     std::map<std::string, int > &Game::get_tax_turns()
+    std::map<std::string, int> &Game::get_tax_turns()
     {
         return tax_turns;
     }
@@ -62,6 +62,7 @@ namespace coup
     void Game::add_to_coup(const std::string &attacker, const std::string &target)
     {
         coup_list.emplace_back(attacker, target);
+        std::cout << "[DEBUG] Added to coup_list: " << attacker << " → " << target << std::endl;
     }
 
     string Game::turn() const
@@ -108,71 +109,70 @@ namespace coup
     {
         if (players_list.empty())
             return;
+
         if (get_current_player()->is_extra_turn())
         {
-
             int turns = get_current_player()->get_extra_turns();
-            // אם השחקן הנוכחי קיבל תור נוסף, הוא לא עובר לתור הבא
             turns--;
             get_current_player()->set_extra_turns(turns);
-            return;
+            return; // נשאר באותו תור
         }
-        Player *prev_player = get_current_player(); // נשמור את השחקן שלפני שינוי turn_index
-        size_t prev_index = turn_index;
+
+        Player *prev_player = get_current_player();
 
         // advance to next living player
         do
         {
             turn_index = (turn_index + 1) % players_list.size();
         } while (players_list[turn_index]->is_eliminated());
+
         global_turn_index++;
-        if (turn_index == 0)
-        { // סיבוב חדש התחיל
+
+        // ✅ התנאי הנכון לאיפוס FLAGS בתחילת סבב חדש
+        if (global_turn_index % get_active_players_count() == 0)
+        {
             current_round++;
             for (Player *p : players_list)
             {
                 if (p->role() == "Judge")
-                {
                     static_cast<Judge *>(p)->reset_undo_bribe_flag();
-                }
                 if (p->role() == "Governor")
-                {
                     static_cast<Governor *>(p)->reset_undo_tax_flag();
-                }
                 if (p->role() == "General")
-                {
                     static_cast<General *>(p)->reset_undo_coup_flag();
-                }
                 if (p->role() == "Spy")
-                {
                     static_cast<Spy *>(p)->reset_peek_and_disable_flag();
-                }
             }
         }
 
         Player *current = players_list[turn_index];
+
+        // מנקה רשומות coup לפי תוקף
         coup_list.erase(std::remove_if(coup_list.begin(), coup_list.end(),
                                        [this](const std::pair<std::string, std::string> &entry)
                                        {
                                            return entry.first == turn();
                                        }),
                         coup_list.end());
-        // בתוך next_turn(), בסוף הפונקציה
+
+        // הפחתת טיימרים של פעולות רגילות
         for (auto it = last_actions.begin(); it != last_actions.end();)
         {
-            it->second.second--; // הפחתת טיימר
+            it->second.second--;
             if (it->second.second <= 0)
             {
-                it = last_actions.erase(it); // מחק אם נגמר הזמן
+                it = last_actions.erase(it);
             }
             else
             {
                 ++it;
             }
         }
+
         current->set_last_action("");
         current->start_new_turn();
 
+        // ניהול מצב של DISABLE TO ARREST
         if (prev_player->get_disable_arrest_turns() > 0)
         {
             prev_player->set_disable_arrest_turns(prev_player->get_disable_arrest_turns() - 1);
@@ -182,8 +182,6 @@ namespace coup
                 std::cout << prev_player->get_name() << " is no longer blocked from ARREST." << std::endl;
             }
         }
-        // ✅ איפוס הדגל – עברנו תור
-        // waiting_for_next_turn = false;
     }
 
     void Game::check_force_coup(Player *current_player)

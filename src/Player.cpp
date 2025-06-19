@@ -147,7 +147,6 @@ namespace coup
         game.remove_player(&target);
         game.add_to_coup(name, target.get_name());
         coins -= 7;
-        set_last_action("coup");
         game.next_turn();
     }
 

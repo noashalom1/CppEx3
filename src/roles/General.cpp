@@ -22,28 +22,7 @@ namespace coup
 
         if (!target.is_eliminated())
         {
-            throw TargetIsAlreadyEliminated();
-        }
-
-        // ודא שהשחקן באמת הודח ע"י מישהו
-        bool found = false;
-        for (const auto &entry : game.get_coup_list())
-        {
-            if (entry.second == target.get_name())
-            {
-                // 🔴 הוספת התנאי: אל תאפשר לבטל אם אתה זה שביצע את ה-COUP
-                if (entry.first == name)
-                {
-                    throw GameException("You cannot undo your own coup.");
-                }
-                found = true;
-                break;
-            }
-        }
-
-        if (!found)
-        {
-            throw GameException("Target was not couped.");
+            throw GameException("Target is not eliminated.");
         }
 
         coins -= 5;
@@ -56,9 +35,7 @@ namespace coup
                                return entry.second == target.get_name();
                            }),
             game.get_coup_list().end());
-
-        attacker.set_must_coup(false);
-        attacker.set_last_action("undo_coup");
+ 
         mark_undo_coup_used();
 
         return name + " undid coup on " + target.get_name();

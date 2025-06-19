@@ -17,6 +17,7 @@ namespace coup
         size_t turn_index = 0;
         size_t global_turn_index = 0; // אינדקס גלובלי לסבב הנוכחי, לא תלוי בשחקן
         std::map<std::string, int > tax_turns;
+      
 
         // bool waiting_for_next_turn = false; // האם צריך ללחוץ NEXT TURN
 
@@ -43,6 +44,7 @@ namespace coup
         std::string turn() const;
         std::vector<std::pair<std::string, std::string>> &get_coup_list();
         std::map<std::string, int > &get_tax_turns();
+      
         void add_to_coup(const std::string &attacker, const std::string &target);
         size_t get_global_turn_index() const { return global_turn_index; }
         // מחזיר רשימה של שמות כל השחקנים

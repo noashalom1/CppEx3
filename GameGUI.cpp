@@ -121,15 +121,9 @@ void GameGUI::showTargetSelection(std::function<void(Player *)> action, bool inc
     }
     else
     {
-        // ברירת מחדל – שחקנים חיים בלבד
-        const auto &all = game.get_players();
-        for (Player *p : all)
-        {
-            if (!p->is_eliminated() && (includeCurrentPlayer || p != current))
-            {
-                finalTargets.push_back(p);
-            }
-        }
+        inGameError = "No targets available."; // fallback חסום
+        state = GUIState::InGame;
+        return;
     }
 
     for (Player *p : finalTargets)
@@ -195,6 +189,8 @@ void GameGUI::run()
                             try
                             {
                                 btn.execute();
+                                buttons.clear();
+                                setupButtons();
                             }
                             catch (const GameException &e)
                             {
@@ -371,7 +367,6 @@ void GameGUI::run()
     }
 }
 
-
 // פונקציה כללית להוספת כפתורי פעולות מיוחדות לפי תפקיד
 int GameGUI::addRoleActionButtons(const std::string &role,
                                   const std::string &buttonPrefix,
@@ -405,9 +400,20 @@ int GameGUI::addRoleActionButtons(const std::string &role,
                       {
             try {
                 if (p->is_eliminated()) {
-                    inGameError = p->get_name() + " is eliminated.";
-                    return;
-                }
+    bool was_couped = false;
+    for (const auto& pair : game.get_coup_list()) {
+        if (pair.second == p->get_name()) {
+            was_couped = true;
+            break;
+        }
+    }
+
+    if (p->role() != "General" || !was_couped) {
+        inGameError = p->get_name() + " is eliminated.";
+        return;
+    }
+}
+
                 actionPerPlayer(p);
             } catch (const std::exception& e) {
                 inGameError = e.what();
@@ -487,13 +493,38 @@ void GameGUI::setupButtons()
 
     Button coupBtn("Coup", font, sf::Vector2f(150, 40), sf::Vector2f(50, 400));
     coupBtn.setAction([this]()
-                      { showTargetSelection([this](Player *target)
-                                            {
+                      {
+    std::vector<Player*> aliveTargets;
+    for (Player* p : game.get_players())
+    {
+        if (!p->is_eliminated() && p != game.get_current_player())
+        {
+            aliveTargets.push_back(p);
+        }
+    }
+
+    if (aliveTargets.empty())
+    {
+        inGameError = "No living players to coup.";
+        return;
+    }
+
+    showTargetSelection(
+        [this](Player* target)
+        {
             Player* p = game.get_current_player();
-            p->coup(*target);
-            p->set_last_action("coup");
-            actionMessage = p->get_name() + " couped " + target->get_name();
-            inGameError.clear(); }, false, game.get_players()); });
+            try {
+                p->coup(*target);
+                p->set_last_action("coup");
+                actionMessage = p->get_name() + " couped " + target->get_name();
+                inGameError.clear();
+            } catch (const std::exception& e) {
+                inGameError = e.what();
+                actionMessage.clear();
+            }
+        },
+        false,
+        aliveTargets); });
     buttons.push_back(coupBtn);
 
     // Role-specific action: invest for Baron
@@ -519,7 +550,7 @@ void GameGUI::setupButtons()
     y += 40 * addRoleActionButtons("Governor", "Undo Tax", y, [this](Player *p)
                                    {
     try {
-        std::string msg = static_cast<Governor*>(p)->undo_tax();  // ← קיבלנו הודעה מהמנוע
+        std::string msg = static_cast<Governor*>(p)->undo_tax();  
         actionMessage = msg;
         inGameError.clear();
     } catch (const std::exception& e) {
@@ -542,24 +573,39 @@ void GameGUI::setupButtons()
 
     // Spy: Peek and Disable
     y += 40 * addRoleActionButtons("Spy", "Peek and Disable", y, [this](Player *p)
-                                   { showTargetSelection(
-                                         [this, p](Player *target)
-                                         {
-                                             try
-                                             {
-                                                 Spy *spy = static_cast<Spy *>(p);
-                                                 std::string result = spy->peek_and_disable(*target);
-                                                 actionMessage = result;
-                                                 inGameError.clear();
-                                             }
-                                             catch (const std::exception &e)
-                                             {
-                                                 inGameError = e.what();
-                                                 actionMessage.clear();
-                                             }
-                                         },
-                                         false,
-                                         game.get_players()); });
+                                   {
+    // סינון של מטרות: רק שחקנים בחיים ולא השחקן עצמו
+    std::vector<Player*> filteredTargets;
+    for (Player* target : game.get_players()) {
+        if (!target->is_eliminated() && target != p) {
+            filteredTargets.push_back(target);
+        }
+    }
+
+    // אם אין מטרות מתאימות
+    if (filteredTargets.empty()) {
+        inGameError = "No valid targets available.";
+        return;
+    }
+
+    showTargetSelection(
+        [this, p](Player *target)
+        {
+            try
+            {
+                Spy *spy = static_cast<Spy *>(p);
+                std::string result = spy->peek_and_disable(*target);
+                actionMessage = result;
+                inGameError.clear();
+            }
+            catch (const std::exception &e)
+            {
+                inGameError = e.what();
+                actionMessage.clear();
+            }
+        },
+        true, // לא לכלול את current player
+        filteredTargets); });
 
     // General: Undo Coup
     y += 40 * addRoleActionButtons("General", "Undo Coup", y, [this](Player *p)
@@ -567,8 +613,11 @@ void GameGUI::setupButtons()
     // מקבל את רשימת הקורבנות מהמכונה עצמה
     std::vector<Player*> targets;
     for (const auto& entry : game.get_coup_list()) {
+        std::cout << "  Attacker: " << entry.first << ", Target: " << entry.second << std::endl;
+      
         try {
             Player* target = game.get_player(entry.second);
+            if(!target->is_eliminated()) continue;
             targets.push_back(target);
         } catch (...) {}
     }

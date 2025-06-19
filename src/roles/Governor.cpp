@@ -56,8 +56,8 @@ namespace coup
             // נחפש רק tax, רק מסבב נוכחי, ורק לא של השחקן שמבצע את undo
             if (action == "tax")
             {
-                if((global_turn - round) > (players_count - 1)){
-                    throw GameException(name + " Already used undo this round.");
+                if((global_turn - round) > (players_count-1)){
+                    throw GameException(actor + "'s tax is too old.");
                 }
 
                 if(name == actor){
