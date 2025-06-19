@@ -191,21 +191,6 @@ namespace coup
         return sanctioned;
     }
 
-    // void Player::set_disable_to_arrest()
-    // {
-    //     disable_to_arrest = true;
-    // }
-
-    // void Player::clear_disable_to_arrest()
-    // {
-    //     disable_to_arrest = false;
-    // }
-
-    // bool Player::is_disable_to_arrest() const
-    // {
-    //     return disable_to_arrest;
-    // }
-
     void Player::set_must_coup(bool value)
     {
         mustPerformCoup = value;

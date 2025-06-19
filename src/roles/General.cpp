@@ -12,7 +12,7 @@ namespace coup
     {
         if (!can_undo_coup())
         {
-            throw GameException(name + " already used UNDO COUP this round.");
+            throw ActionAlreadyUsedThisRoundException(name, "UNDO COUP");
         }
 
         if (coins < 5)
@@ -35,7 +35,7 @@ namespace coup
                                return entry.second == target.get_name();
                            }),
             game.get_coup_list().end());
- 
+
         mark_undo_coup_used();
 
         return name + " undid coup on " + target.get_name();

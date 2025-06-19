@@ -14,9 +14,8 @@ namespace coup
         if (must_coup())
             throw MustPerformCoupException();
         if (is_sanctioned())
-        {
             throw SanctionedException();
-        }
+
         coins += 3;
         game.get_action_history().emplace_back(name, "tax", game.get_current_round());
         game.get_tax_turns()[name] = game.get_global_turn_index(); // עדכון סבב המס האחרון
@@ -33,7 +32,6 @@ namespace coup
         {
             throw GameException(name + " has already used undo this round.");
         }
-               
     }
 
     std::string Governor::undo_tax()
@@ -56,11 +54,13 @@ namespace coup
             // נחפש רק tax, רק מסבב נוכחי, ורק לא של השחקן שמבצע את undo
             if (action == "tax")
             {
-                if((global_turn - round) > (players_count-1)){
+                if ((global_turn - round) > (players_count - 1))
+                {
                     throw GameException(actor + "'s tax is too old.");
                 }
 
-                if(name == actor){
+                if (name == actor)
+                {
                     throw GameException(name + " cannot undo their own tax.");
                 }
                 Player *target = game.get_player(actor);
