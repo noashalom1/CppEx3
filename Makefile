@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++17
 
 # Include directories
-INCLUDES = -Iinclude -Iinclude/roles -Isrc -Isrc/gui -Isrc/roles
+INCLUDES = -Iinclude -Iinclude/gui -Iinclude/roles -Isrc -Isrc/gui -Isrc/roles
 
 # SFML libraries
 LIBS = -lsfml-graphics -lsfml-window -lsfml-system
