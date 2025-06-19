@@ -18,7 +18,6 @@ namespace coup
     private:
         
         bool eliminated = false;
-        std::string last_action;
         bool disable_to_arrest = false;
         
 
@@ -79,9 +78,7 @@ namespace coup
         bool is_extra_turn() const { return extra_turns > 0; }
         void set_extra_turns(int value) { extra_turns = value; }
         int get_extra_turns() const { return extra_turns; }
-
-        void set_last_action(const std::string &action) { last_action = action; }
-        std::string get_last_action() const { return last_action; }
+        
         const std::string &name_ref() const { return name; }
 
         virtual void start_new_turn()

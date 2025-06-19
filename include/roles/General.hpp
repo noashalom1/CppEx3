@@ -16,7 +16,7 @@ namespace coup
         bool can_undo_coup() const { return !used_undo_this_round; }
         void mark_undo_coup_used() { used_undo_this_round = true; }
         void reset_undo_coup_flag() { used_undo_this_round = false; }
-        std::string undo_coup(Player &attacker, Player &target);
+        std::string undo_coup(Player &target);
         std::string role() const override;
     };
 

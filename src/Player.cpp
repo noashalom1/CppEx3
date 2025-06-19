@@ -41,7 +41,6 @@ namespace coup
         if (is_sanctioned() == true)
             throw SanctionedException();
         coins++;
-        set_last_action("gather");
         game.next_turn();
     }
 
@@ -104,7 +103,6 @@ namespace coup
             coins++;
         }
         game.set_last_arrested_name(target.get_name());
-        set_last_action("arrest");
         game.next_turn();
     }
 
@@ -118,14 +116,13 @@ namespace coup
         if (target.get_name() == name)
             throw CannotTargetYourselfException();
         if (target.is_sanctioned() == true)
-            throw SanctionedException();
+            throw AlreadySanctionedException();
         if (target.role() == "Baron")
             target.increase_coins(1); // Baron gets 1 coin back
         if ((target.role() == "Judge" && coins < 4) || coins < 3)
             throw NotEnoughCoinsException(target.role() == "Judge" ? 4 : 3, coins);
         target.role() == "Judge" ? coins -= 4 : coins -= 3; // Judge costs 4, others cost 3
         target.mark_sanctioned(name);
-        set_last_action("sanction");
         game.next_turn();
     }
 

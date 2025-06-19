@@ -1,9 +1,7 @@
 #include "GameGUI.hpp"
 
-using namespace coup;
-
 int main() {
-    GameGUI gui;
+    coup::GameGUI gui;
     gui.run();
     return 0;
 }

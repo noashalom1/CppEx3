@@ -26,7 +26,6 @@ namespace coup
 
         target.set_disable_to_arrest(true);
         target.set_disable_arrest_turns(1);
-        set_last_action("peek_and_disable");
 
         mark_peek_and_disable_used();
 

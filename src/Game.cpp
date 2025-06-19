@@ -167,8 +167,6 @@ namespace coup
                 ++it;
             }
         }
-
-        current->set_last_action("");
         current->start_new_turn();
 
         // ניהול מצב של DISABLE TO ARREST

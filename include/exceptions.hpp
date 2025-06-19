@@ -25,6 +25,12 @@ namespace coup
         SanctionedException() : GameException("You are sanctioned and cannot perform this action.") {}
     };
 
+    class AlreadySanctionedException : public GameException
+    {
+    public:
+        AlreadySanctionedException() : GameException("Target is already sanctioned.") {}
+    };
+
     class NotEnoughCoinsException : public GameException
     {
     public:
