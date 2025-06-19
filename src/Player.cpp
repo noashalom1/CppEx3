@@ -17,10 +17,7 @@ namespace coup
         return name;
     }
 
-    int Player::get_coins() const
-    {
-        return coins;
-    }
+    
 
     void Player::check_turn() const
     {

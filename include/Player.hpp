@@ -15,18 +15,24 @@ namespace coup
 
     class Player
     {
+    private:
+        
+        bool eliminated = false;
+        std::string last_action;
+        bool disable_to_arrest = false;
+        
 
     protected:
         Game &game;
         std::string name;
         int coins;
-        bool eliminated = false;
+        
         bool mustPerformCoup = false;
-        std::string last_action;
+        
         bool sanctioned = false;
         int extra_turns = 0;
         std::string sanctioned_by;
-        bool disable_to_arrest = false;
+       
         int disable_arrest_turns = 0;
         bool used_bribe = false;
 
@@ -35,7 +41,7 @@ namespace coup
         virtual ~Player();
 
         const std::string &get_name() const;
-        int get_coins() const;
+        
         virtual std::string role() const = 0;
         void check_turn() const;
         void revive();
@@ -46,7 +52,8 @@ namespace coup
         virtual void arrest(Player &target);
         virtual void sanction(Player &target);
         virtual void coup(Player &target);
-
+     
+        int get_coins() const { return coins; }
         void decrease_coins(int amount);
         void increase_coins(int amount);
 
@@ -73,6 +80,10 @@ namespace coup
         void set_extra_turns(int value) { extra_turns = value; }
         int get_extra_turns() const { return extra_turns; }
 
+        void set_last_action(const std::string &action) { last_action = action; }
+        std::string get_last_action() const { return last_action; }
+        const std::string &name_ref() const { return name; }
+
         virtual void start_new_turn()
         {
             if (coins >= 10)
@@ -95,10 +106,7 @@ namespace coup
             reset_used_bribe();
         }
 
-        void set_last_action(const std::string &action) { last_action = action; }
-        std::string get_last_action() const { return last_action; }
-
-        const std::string &name_ref() const { return name; }
+        
     };
 
 }

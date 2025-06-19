@@ -17,7 +17,7 @@ namespace coup
 
     Game::~Game() {}
 
-    const std::vector<Player *> &Game::get_players() const // גם לדאוג להוריד איפה שיש
+    const std::vector<Player *> &Game::get_players() const 
     {
         return players_list;
     }
