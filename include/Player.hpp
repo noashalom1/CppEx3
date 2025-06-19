@@ -23,9 +23,7 @@ namespace coup
         bool eliminated = false;
         bool mustPerformCoup = false;
         std::string last_action;
-        // std::string last_arrest_target;
         bool sanctioned = false;
-        // bool disable_to_arrest = false;
         int extra_turns = 0;
         std::string sanctioned_by;
         bool disable_to_arrest = false;

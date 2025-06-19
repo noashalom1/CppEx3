@@ -16,13 +16,13 @@ namespace coup
     std::string Spy::peek_and_disable(Player &target)
     {
         if (target.is_eliminated())
-            throw GameException("Cannot peek and disable an eliminated player.");
+            throw TargetIsEliminatedException();
 
         if (target.get_name() == name)
-            throw GameException("You cannot peek and disable yourself.");
+            throw CannotTargetYourselfException();
 
         if (!can_peek_and_disable())
-            throw GameException(name + " already used peek and disable this round.");
+            throw ActionAlreadyUsedThisRoundException(name, "peek and disable");
 
         target.set_disable_to_arrest(true);
         target.set_disable_arrest_turns(1);

@@ -26,11 +26,11 @@ namespace coup
     {
         if (is_eliminated())
         {
-            throw GameException(name + " is eliminated.");
+            throw PlayerEliminatedException(name);
         }
         if (used_undo_this_round)
         {
-            throw GameException(name + " has already used undo this round.");
+            throw ActionAlreadyUsedThisRoundException(name, "UNDO TAX");
         }
     }
 
@@ -38,7 +38,7 @@ namespace coup
     {
         if (is_eliminated())
         {
-            throw GameException(name + " is eliminated.");
+            throw PlayerEliminatedException(name);
         }
 
         can_undo_tax();
@@ -56,17 +56,17 @@ namespace coup
             {
                 if ((global_turn - round) > (players_count - 1))
                 {
-                    throw GameException(actor + "'s tax is too old.");
+                    throw ActionTooOldException(actor, "tax");
                 }
 
                 if (name == actor)
                 {
-                    throw GameException(name + " cannot undo their own tax.");
+                    throw CannotUndoOwnActionException(name, "tax");
                 }
                 Player *target = game.get_player(actor);
                 if (target->is_eliminated())
                 {
-                    throw TargetIsAlreadyEliminated();
+                    throw TargetIsEliminatedException();
                 }
 
                 int amount = (target->role() == "Governor") ? 3 : 2;
@@ -82,7 +82,7 @@ namespace coup
             }
         }
 
-        throw GameException("No recent tax by another player to undo.");
+        throw NoRecentActionToUndoException("tax");
     }
 
     std::string Governor::role() const

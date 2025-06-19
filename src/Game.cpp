@@ -62,7 +62,6 @@ namespace coup
     void Game::add_to_coup(const std::string &attacker, const std::string &target)
     {
         coup_list.emplace_back(attacker, target);
-        std::cout << "[DEBUG] Added to coup_list: " << attacker << " → " << target << std::endl;
     }
 
     string Game::turn() const

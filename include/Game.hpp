@@ -17,9 +17,6 @@ namespace coup
         size_t turn_index = 0;
         size_t global_turn_index = 0; // אינדקס גלובלי לסבב הנוכחי, לא תלוי בשחקן
         std::map<std::string, int > tax_turns;
-      
-
-        // bool waiting_for_next_turn = false; // האם צריך ללחוץ NEXT TURN
 
         std::vector<std::pair<std::string, std::string>> coup_list;
         std::string last_arrested_name;
@@ -49,10 +46,6 @@ namespace coup
         size_t get_global_turn_index() const { return global_turn_index; }
         // מחזיר רשימה של שמות כל השחקנים
         std::vector<std::string> players() const;
-
-        // bool is_waiting_for_next_turn() const { return waiting_for_next_turn; }
-        // void mark_waiting_for_next_turn() { waiting_for_next_turn = true; }
-        // void clear_waiting_for_next_turn() { waiting_for_next_turn = false; }
 
         // מחזיר את שם המנצח אם יש אחד בלבד
         std::string winner() const;

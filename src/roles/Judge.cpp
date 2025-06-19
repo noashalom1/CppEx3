@@ -12,27 +12,27 @@ namespace coup
     {
         if (is_eliminated())
         {
-            throw GameException(name + " is eliminated.");
+            throw PlayerEliminatedException(name);
         }
 
         if (!can_undo_bribe())
         {
-            throw GameException(name + " already used undo this round.");
+            throw ActionAlreadyUsedThisRoundException(name, "UNDO BRIBE");
         }
 
         if(!target.is_used_bribe())
         {
-            throw GameException(target.get_name() + " has not used bribe.");
+            throw UndoNotAllowedException(target.get_name(), " bribe");
         }
 
         if (&target == this)
         {
-            throw GameException("You can't undo your own bribe.");
+            throw CannotUndoOwnActionException(name, "bribe");
         }
 
         if (target.is_eliminated())
         {
-            throw TargetIsAlreadyEliminated();
+            throw TargetIsEliminatedException();
         }
 
          std::string msg;
@@ -49,7 +49,7 @@ namespace coup
         }
         else
         {
-            throw GameException("Target has not done a bribe or has already undone it.");
+            throw InvalidBribeUndoException();
         }
 
         mark_undo_bribe_used();

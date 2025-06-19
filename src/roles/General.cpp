@@ -22,7 +22,7 @@ namespace coup
 
         if (!target.is_eliminated())
         {
-            throw GameException("Target is not eliminated.");
+            throw TargetNotEliminatedException();
         }
 
         coins -= 5;

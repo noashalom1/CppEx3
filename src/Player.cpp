@@ -32,7 +32,7 @@ namespace coup
     void Player::revive()
     {
         if (!is_eliminated())
-            throw GameException("Player is not eliminated.");
+            throw TargetNotEliminatedException();
         eliminated = false;
     }
 
@@ -80,13 +80,13 @@ namespace coup
         if (must_coup())
             throw MustPerformCoupException();
         if (is_disable_to_arrest())
-            throw GameException("You are blocked from using ARREST this turn.");
+            throw ArrestBlockedException();
         if (target.get_name() == game.get_last_arrested_name())
             throw DuplicateArrestException();
         if (target.is_eliminated())
-            throw TargetIsAlreadyEliminated();
+            throw TargetIsEliminatedException();
         if (target.get_name() == name)
-            throw GameException("You cannot arrest yourself.");
+            throw CannotTargetYourselfException();
         if (target.role() == "General")
         {
             if (target.get_coins() <= 0)
@@ -117,19 +117,16 @@ namespace coup
         if (must_coup())
             throw MustPerformCoupException();
         if (target.is_eliminated())
-            throw TargetIsAlreadyEliminated();
+            throw TargetIsEliminatedException();
         if (target.get_name() == name)
-            throw GameException("You cannot sanction yourself.");
+            throw CannotTargetYourselfException();
         if (target.is_sanctioned() == true)
-            throw GameException("Target is already sanctioned.");
-        //     if (target.is_sanctioned())
-        // throw GameException("Target is already sanctioned.");
+            throw SanctionedException();
         if (target.role() == "Baron")
             target.increase_coins(1); // Baron gets 1 coin back
         if ((target.role() == "Judge" && coins < 4) || coins < 3)
             throw NotEnoughCoinsException(target.role() == "Judge" ? 4 : 3, coins);
         target.role() == "Judge" ? coins -= 4 : coins -= 3; // Judge costs 4, others cost 3
-        // coins -= (target.role() == "Judge" ? 4 : 3);
         target.mark_sanctioned(name);
         set_last_action("sanction");
         game.next_turn();
@@ -143,7 +140,7 @@ namespace coup
         if (target.is_eliminated())
             throw TargetIsAlreadyEliminated();
         if (target.get_name() == name)
-            throw GameException("You cannot coup yourself.");
+            throw CannotTargetYourselfException();
         game.remove_player(&target);
         game.add_to_coup(name, target.get_name());
         coins -= 7;

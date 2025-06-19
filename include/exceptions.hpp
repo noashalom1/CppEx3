@@ -8,13 +8,13 @@ namespace coup
 {
 
     class GameException : public std::runtime_error
-    { //
+    {
     public:
         explicit GameException(const std::string &msg) : std::runtime_error(msg) {}
     };
 
     class NotYourTurnException : public GameException
-    { //
+    {
     public:
         NotYourTurnException() : GameException("Not your turn.") {}
     };
@@ -26,7 +26,7 @@ namespace coup
     };
 
     class NotEnoughCoinsException : public GameException
-    { //
+    {
     public:
         NotEnoughCoinsException(int required, int curr) : GameException("Not enough coins. Required: " + std::to_string(required) + ", but have: " + std::to_string(curr)) {}
     };
@@ -74,7 +74,7 @@ namespace coup
     };
 
     class PlayerNotFoundException : public GameException
-    { //
+    {
     public:
         explicit PlayerNotFoundException(const std::string &name) : GameException("Player not found: " + name) {}
     };
@@ -85,28 +85,24 @@ namespace coup
         NoPlayersLeft() : GameException("No players left.") {}
     };
 
-    class ActionBlockedException : public GameException
-    {
-    public:
-        ActionBlockedException() : GameException("Coup blocked by General. You lost the coins.") {}
-    };
-
     class UndoNotAllowedException : public GameException
     {
     public:
-        UndoNotAllowedException() : GameException("Cannot undo: target did not perform tax.") {}
-    };
-
-    class UndoNotAllowed : public GameException
-    {
-    public:
-        UndoNotAllowed() : GameException("Judge: undo bribe: target did not perform bribe") {}
+        UndoNotAllowedException(const std::string &target_name, const std::string &action)
+            : GameException(target_name + " has not used " + action + ".") {}
     };
 
     class TargetIsAlreadyEliminated : public GameException
     {
     public:
         TargetIsAlreadyEliminated() : GameException("Target is already eliminated.") {}
+    };
+
+    class TargetIsEliminatedException : public GameException
+    {
+    public:
+        TargetIsEliminatedException()
+            : GameException("Cannot target an eliminated player.") {}
     };
 
     // כאשר שחקן כבר ביצע פעולה כלשהי בסיבוב הנוכחי
@@ -116,6 +112,67 @@ namespace coup
         ActionAlreadyUsedThisRoundException(const std::string &name, const std::string &action)
             : GameException(name + std::string(" has already used ") + action + std::string(" this round.")) {}
     };
+
+    // כאשר השחקן המטרה לא מודח
+    class TargetNotEliminatedException : public GameException
+    {
+    public:
+        TargetNotEliminatedException() : GameException("Target is not eliminated.") {}
+    };
+
+    // כאשר השחקן שמנסה לבצע פעולה מודח בעצמו
+    class PlayerEliminatedException : public GameException
+    {
+    public:
+        explicit PlayerEliminatedException(const std::string &name)
+            : GameException(name + " is eliminated.") {}
+    };
+
+    // כאשר מנסים לבטל פעולה ישנה מדי
+    class ActionTooOldException : public GameException
+    {
+    public:
+        explicit ActionTooOldException(const std::string &actor, const std::string &action)
+            : GameException(actor + "'s " + action + " is too old.") {}
+    };
+
+    // כאשר שחקן מנסה לבטל את הפעולה של עצמו
+    class CannotUndoOwnActionException : public GameException
+    {
+    public:
+        explicit CannotUndoOwnActionException(const std::string &name, const std::string &action)
+            : GameException(name + " cannot undo their own " + action + ".") {}
+    };
+
+    // כאשר אין פעולה אחרונה לביטול
+    class NoRecentActionToUndoException : public GameException
+    {
+    public:
+        explicit NoRecentActionToUndoException(const std::string &action)
+            : GameException("No recent " + action + " by another player to undo.") {}
+    };
+
+    class InvalidBribeUndoException : public GameException
+    {
+    public:
+        InvalidBribeUndoException()
+            : GameException("Target has not done a bribe or has already undone it.") {}
+    };
+
+    class CannotTargetYourselfException : public GameException
+    {
+    public:
+        CannotTargetYourselfException()
+            : GameException("You cannot target yourself.") {}
+    };
+
+    class ArrestBlockedException : public GameException
+    {
+    public:
+        ArrestBlockedException()
+            : GameException("You are blocked from using ARREST this turn.") {}
+    };
+
 }
 
 #endif
