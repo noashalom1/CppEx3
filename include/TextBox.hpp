@@ -4,7 +4,8 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 
-class TextBox {
+class TextBox final
+{
 private:
     sf::RectangleShape box;
     sf::Text text;
@@ -12,10 +13,10 @@ private:
     bool isSelected = false;
 
 public:
-    TextBox(const sf::Font& font, sf::Vector2f size, sf::Vector2f position);
+    TextBox(const sf::Font &font, sf::Vector2f size, sf::Vector2f position);
 
-    void draw(sf::RenderWindow& window) const;
-    void handleEvent(const sf::Event& event);
+    void draw(sf::RenderWindow &window) const;
+    void handleEvent(const sf::Event &event);
 
     void setSelected(bool selected);
     std::string getText() const;
