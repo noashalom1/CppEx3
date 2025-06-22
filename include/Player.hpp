@@ -1,5 +1,4 @@
-// Updated Player.hpp
-
+//Author: noapatito123@gmail.com
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 

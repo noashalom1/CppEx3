@@ -1,3 +1,4 @@
+// Author: noapatito123@gmail.com
 #include "General.hpp"
 #include "Game.hpp"
 #include "exceptions.hpp"

@@ -1,3 +1,4 @@
+// Author: noapatito123@gmail.com
 #include "GameGUI.hpp"
 
 int main() {

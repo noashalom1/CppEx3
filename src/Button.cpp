@@ -1,3 +1,4 @@
+// Author: noapatito123@gmail.com
 #include "Button.hpp"
 
 Button::Button(const std::string& text, const sf::Font& font,

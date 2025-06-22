@@ -1,3 +1,4 @@
+// Author: noapatito123@gmail.com
 #ifndef GAME_HPP
 #define GAME_HPP
 

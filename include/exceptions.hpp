@@ -1,3 +1,4 @@
+// Author: noapatito123@gmail.com
 #ifndef EXCEPTIONS_HPP
 #define EXCEPTIONS_HPP
 

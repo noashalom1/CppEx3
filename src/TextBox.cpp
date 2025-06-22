@@ -1,3 +1,4 @@
+// Author: noapatito123@gmail.com
 #include "TextBox.hpp"
 
 TextBox::TextBox(const sf::Font& font, sf::Vector2f size, sf::Vector2f position) {

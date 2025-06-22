@@ -1,3 +1,4 @@
+// Author: noapatito123@gmail.com
 #include "Merchant.hpp"
 #include "Game.hpp"
 #include "exceptions.hpp"

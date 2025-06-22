@@ -1,4 +1,4 @@
-// GameGUI.hpp (מודול ראשי)
+// Author: noapatito123@gmail.com
 #ifndef GAMEGUI_HPP
 #define GAMEGUI_HPP
 

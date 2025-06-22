@@ -1,3 +1,5 @@
+# Author: noapatito123@gmail.com
+
 # Compiler and flags
 CXX = g++
 CXXFLAGS = -Wall -Wextra -std=c++17
