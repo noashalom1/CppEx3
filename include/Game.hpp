@@ -13,9 +13,11 @@ namespace coup
     class Game
     {
     private:
-        std::vector<Player *> players_list; // צריכה לעבור על הקוד ולהוריד איפה שיש- כי זה סתם בדיקות כפולות של אם יש שחקנים חיים
-        size_t turn_index = 0;
-        size_t global_turn_index = 0; // אינדקס גלובלי לסבב הנוכחי, לא תלוי בשחקן
+        std::vector<Player *> players_list; 
+        size_t turn_index;
+        size_t global_turn_index; 
+        int current_round;
+
         std::map<std::string, int > tax_turns;
 
         std::vector<std::pair<std::string, std::string>> coup_list;
@@ -23,7 +25,7 @@ namespace coup
         std::string last_tax_player_name;
         std::map<std::string, std::pair<std::string, int>> last_actions;
         std::vector<std::tuple<std::string, std::string, int>> action_history; // שם שחקן, פעולה, מספר סבב
-        int current_round = 1;
+        
 
     public:
         Game();

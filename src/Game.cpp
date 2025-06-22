@@ -14,11 +14,12 @@ using namespace std;
 namespace coup
 {
 
-    Game::Game() {}
+    Game::Game()
+        : turn_index(0), global_turn_index(0), current_round(1) {}
 
     Game::~Game() {}
 
-    const std::vector<Player *> &Game::get_players() const 
+    const std::vector<Player *> &Game::get_players() const
     {
         return players_list;
     }
