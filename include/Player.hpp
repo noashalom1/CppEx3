@@ -6,7 +6,6 @@
 #include <map>
 #include "Game.hpp"
 
-
 namespace coup
 {
 
@@ -15,74 +14,67 @@ namespace coup
     class Player
     {
     private:
-        bool eliminated;
-        bool disable_to_arrest;
+        bool eliminated; // Is the player eliminated from the game
+        bool disable_to_arrest; // Is the player protected from arrest
 
     protected:
-        Game &game;
-        std::string name;
-        int coins;
-
-        bool mustPerformCoup;
-
-        bool sanctioned;
-        int extra_turns;
-        std::string sanctioned_by;
-
-        int disable_arrest_turns;
-        bool used_bribe;
+        Game &game; // Reference to the game instance
+        std::string name; // Player name
+        int coins; // Number of coins the player has
+        bool mustPerformCoup; // Flag indicating whether the player must perform a coup
+        bool sanctioned; // Is the player sanctioned
+        int extra_turns; // Number of extra turns
+        std::string sanctioned_by; // Name of the player who sanctioned this player
+        int disable_arrest_turns; // Number of turns arrest is disabled
+        bool used_bribe; // Flag for whether the player used bribe last turn
 
     public:
-        Player(Game &game, const std::string &name);
-        virtual ~Player();
+        Player(Game &game, const std::string &name); // Constructor
+        virtual ~Player(); // Destructor
+        virtual std::string role() const = 0; // Get role name (pure virtual)
 
-        const std::string &get_name() const;
+        virtual void gather(); // Gain 1 coin
+        virtual void tax();  // Gain 2 coins 
+        virtual void bribe(); // Bribe for extra turn
+        virtual void arrest(Player &target); // Arrest another player
+        virtual void sanction(Player &target); // Sanction another player
+        virtual void coup(Player &target); // Eliminate another player
 
-        virtual std::string role() const = 0;
-        void check_turn() const;
-        void revive();
+        const std::string &get_name() const { return name; } // Get player name
+        void check_turn() const; // Check if it's this player's turn
+        void revive(); // Revive player (used by General)
+        int get_coins() const { return coins; } // Get coin count
+        void decrease_coins(int amount); // Reduce coin count
+        void increase_coins(int amount); // Increase coin count
 
-        virtual void gather();
-        virtual void tax();
-        virtual void bribe();
-        virtual void arrest(Player &target);
-        virtual void sanction(Player &target);
-        virtual void coup(Player &target);
+        void mark_eliminated() { eliminated = true; } // Mark player as eliminated
+        bool is_eliminated() const { return eliminated; } // Is player eliminated
 
-        int get_coins() const { return coins; }
-        void decrease_coins(int amount);
-        void increase_coins(int amount);
+        void mark_sanctioned(const std::string &by_whom); // Sanction the player
+        void clear_sanctioned();  // Remove sanction
+        bool is_sanctioned() const { return sanctioned; } // Is player currently sanctioned
 
-        void mark_eliminated();
-        bool is_eliminated() const;
+        void set_disable_to_arrest(bool value) { disable_to_arrest = value; } // Set arrest protection
+        bool is_disable_to_arrest() const { return disable_to_arrest; } // Is arrest protection active
+        void set_disable_arrest_turns(int n) { disable_arrest_turns = n; } // Set turns for arrest protection
+        int get_disable_arrest_turns() const { return disable_arrest_turns; } // Get remaining turns of arrest protection
 
-        void mark_sanctioned(const std::string &by_whom);
-        void clear_sanctioned();
-        bool is_sanctioned() const;
+        void set_must_coup(bool value) { mustPerformCoup = value; } // Force player to coup
+        bool must_coup() const { return mustPerformCoup; } // Check if player must coup
 
-        void set_disable_to_arrest(bool value) { disable_to_arrest = value; }
-        bool is_disable_to_arrest() const { return disable_to_arrest; }
-        void set_disable_arrest_turns(int n) { disable_arrest_turns = n; }
-        int get_disable_arrest_turns() const { return disable_arrest_turns; }
+        bool is_used_bribe() const { return used_bribe; } // Did player use bribe
+        void mark_used_bribe() { used_bribe = true; } // Mark bribe used
+        void reset_used_bribe() { used_bribe = false; } // Reset bribe usage
 
-        void set_must_coup(bool value);
-        bool must_coup() const;
+        bool is_extra_turn() const { return extra_turns > 0; } // Does player have extra turns
+        void set_extra_turns(int value) { extra_turns = value; } // Set number of extra turns
+        int get_extra_turns() const { return extra_turns; } // Get number of extra turns
 
-        bool is_used_bribe() const { return used_bribe; }
-        void mark_used_bribe() { used_bribe = true; }
-        void reset_used_bribe() { used_bribe = false; }
-
-        bool is_extra_turn() const { return extra_turns > 0; }
-        void set_extra_turns(int value) { extra_turns = value; }
-        int get_extra_turns() const { return extra_turns; }
-
-        const std::string &name_ref() const { return name; }
-
-        virtual void start_new_turn()
+        virtual void start_new_turn() // Start of new turn
         {
-            mustPerformCoup = (coins >= 10); // Automatically enforce COUP requirement if player has 10 or more coins
+            mustPerformCoup = (coins >= 10); // Automatically enforce COUP if player has 10+ coins
 
-             // Clear SANCTIONED status from players sanctioned by this player
+            // Clear sanctions the player applied to others
             for (Player *p : game.get_players())
             {
                 if (p->is_sanctioned() && p->sanctioned_by == name)
@@ -90,7 +82,7 @@ namespace coup
                     p->clear_sanctioned();
                 }
             }
-            reset_used_bribe(); // Reset used bribe flag at the beginning of the turn
+            reset_used_bribe(); // Reset bribe status for new turn
         }
     };
 

@@ -23,25 +23,6 @@ namespace coup
 
     Player::~Player() {}
 
-    const std::string &Player::get_name() const
-    {
-        return name;
-    }
-
-    void Player::check_turn() const
-    {
-        if (game.turn() != name)
-            throw NotYourTurnException();
-        ;
-    }
-
-    void Player::revive()
-    {
-        if (!is_eliminated())
-            throw TargetNotEliminatedException();
-        eliminated = false;
-    }
-
     void Player::gather()
     {
         check_turn();
@@ -150,6 +131,20 @@ namespace coup
         game.next_turn();
     }
 
+     void Player::check_turn() const
+    {
+        if (game.turn() != name)
+            throw NotYourTurnException();
+        ;
+    }
+
+    void Player::revive()
+    {
+        if (!is_eliminated())
+            throw TargetNotEliminatedException();
+        eliminated = false;
+    }
+
     void Player::decrease_coins(int amount)
     {
         if (coins < amount)
@@ -164,16 +159,6 @@ namespace coup
         coins += amount;
     }
 
-    void Player::mark_eliminated()
-    {
-        eliminated = true;
-    }
-
-    bool Player::is_eliminated() const
-    {
-        return eliminated;
-    }
-
     void Player::mark_sanctioned(const std::string &by_whom)
     {
         sanctioned = true;
@@ -186,19 +171,5 @@ namespace coup
         sanctioned_by.clear();
     }
 
-    bool Player::is_sanctioned() const
-    {
-        return sanctioned;
-    }
-
-    void Player::set_must_coup(bool value)
-    {
-        mustPerformCoup = value;
-    }
-
-    bool Player::must_coup() const
-    {
-        return mustPerformCoup;
-    }
 
 }

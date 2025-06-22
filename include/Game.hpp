@@ -13,72 +13,50 @@ namespace coup
     class Game
     {
     private:
-        std::vector<Player *> players_list; 
-        size_t turn_index;
-        size_t global_turn_index; 
-        int current_round;
+        std::vector<Player *> players_list; // List of all players
+        size_t turn_index; // Index of current turn
+        size_t global_turn_index; // Total turn counter
 
-        std::map<std::string, int > tax_turns;
+        int current_round; // Current round number
 
-        std::vector<std::pair<std::string, std::string>> coup_list;
-        std::string last_arrested_name;
-        std::string last_tax_player_name;
-        std::map<std::string, std::pair<std::string, int>> last_actions;
-        std::vector<std::tuple<std::string, std::string, int>> action_history; // שם שחקן, פעולה, מספר סבב
-        
+        std::map<std::string, int> tax_turns; // Tracks tax turns per player
+
+        std::vector<std::pair<std::string, std::string>> coup_list; // List of coup actions (attacker, target)
+        std::string last_arrested_name; // Last arrested player's name
+        std::string last_tax_player_name; // Last player who performed tax
+        std::vector<std::tuple<std::string, std::string, int>> action_history; // Log of actions (player, action, round)
 
     public:
-        Game();
-        virtual ~Game();
+        Game(); // Constructor
 
-        // מוסיף שחקן למשחק (כל עוד יש מקום)
-        void add_player(Player *player);
-        std::vector<std::tuple<std::string, std::string, int>> &get_action_history()
-        {
-            return action_history;
-        }
-        int get_current_round() const { return current_round; }
-        int get_active_players_count() const;
-        // מחזיר את שם השחקן שתורו
-        std::string turn() const;
-        std::vector<std::pair<std::string, std::string>> &get_coup_list();
-        std::map<std::string, int > &get_tax_turns();
-      
-        void add_to_coup(const std::string &attacker, const std::string &target);
-        size_t get_global_turn_index() const { return global_turn_index; }
-        // מחזיר רשימה של שמות כל השחקנים
-        std::vector<std::string> players() const;
+        virtual ~Game(); // Destructor
 
-        // מחזיר את שם המנצח אם יש אחד בלבד
-        std::string winner() const;
+        const std::vector<Player *> &get_players() const; // Get all players
+        Player *get_player(const std::string &name); // Get player by name
+        Player *get_current_player(); // Get current turn player
 
-        // מעבר לתור הבא (מדלג על מודחים)
-        void next_turn();
+        int get_active_players_count() const; // Count active (non-eliminated) players
+        int get_current_round() const { return current_round; } // Get current round number
 
-        // מחזיר את רשימת השחקנים בפורמט מלא
-        const std::vector<Player *> &get_players() const;
+        size_t get_global_turn_index() const { return global_turn_index; } // Get global turn index
 
-        // הסרה לוגית של שחקן (סימון כהודח)
-        void remove_player(Player *player);
+        std::vector<std::tuple<std::string, std::string, int>> &get_action_history() { return action_history; } // Get action history
+        std::vector<std::pair<std::string, std::string>> &get_coup_list() { return coup_list; } // Get list of coup actions
+        std::map<std::string, int> &get_tax_turns(); // Get tax turn map
 
-        // מחפש שחקן לפי שם
-        Player *get_player(const std::string &name);
+        const std::string &get_last_arrested_name() const; // Get last arrested name
+        void set_last_arrested_name(const std::string &name); // Set last arrested name
 
-        // מחזיר את השחקן הנוכחי שתורו
-        Player *get_current_player();
+        void add_player(Player *player); // Add a new player to the game
+        void remove_player(Player *player); // Eliminate a player from the game
 
-        void set_last_arrested_name(const std::string &name);
-        const std::string &get_last_arrested_name() const;
+        std::string turn() const; // Get the name of the player whose turn it is
 
-        // מסמן לשחקן שהוא חייב לבצע coup (אם יש לו ≥10 מטבעות)
-        void check_force_coup(Player *current_player);
+        void add_to_coup(const std::string &attacker, const std::string &target); // Add a coup record
 
-        void set_last_tax_player_name(const std::string &name);
-        const std::string &get_last_tax_player_name() const;
-        std::map<std::string, std::pair<std::string, int>> &get_last_actions() { return last_actions; }
-        int get_num_players() const { return static_cast<int>(players_list.size()); }
+        std::string winner() const; // Get the winner of the game
+
+        void next_turn(); // Advance to the next turn
     };
 
 }
-
-

@@ -14,31 +14,58 @@ using namespace std;
 namespace coup
 {
 
+    /**
+     * @brief Constructs a new Game object with initial values.
+     */
     Game::Game()
         : turn_index(0), global_turn_index(0), current_round(1) {}
 
+    /**
+     * @brief Destructor for the Game class.
+     */   
     Game::~Game() {}
 
+     /**
+     * @brief Returns a constant reference to the list of players.
+     * @return const std::vector<Player*>& List of players.
+     */
     const std::vector<Player *> &Game::get_players() const
     {
         return players_list;
     }
 
-    void Game::add_player(Player *player)
+    /**
+     * @brief Finds a player by name.
+     * @param name The name of the player to search.
+     * @return Player* Pointer to the found player.
+     * @throws PlayerNotFoundException if the player does not exist.
+     */
+    Player *Game::get_player(const string &name)
     {
-        if (players_list.size() >= 6)
+        for (auto p : players_list)
         {
-            throw MaxPlayersExceededException();
+            if (p->get_name() == name)
+                return p;
         }
-        for (const auto &p : players_list)
-        {
-            if (p->get_name() == player->get_name())
-            {
-                throw DuplicatePlayerNameException();
-            }
-        }
-        players_list.push_back(player);
+        throw PlayerNotFoundException(name);
     }
+
+    /**
+     * @brief Returns the current player (based on turn index).
+     * @return Player* Pointer to the current player.
+     * @throws NoPlayersLeftException if no players are in the game.
+     */
+    Player *Game::get_current_player()
+    {
+        if (players_list.empty())
+            throw NoPlayersLeftException();
+        return players_list[turn_index];
+    }
+
+    /**
+     * @brief Counts the number of players still in the game.
+     * @return int Number of active (not eliminated) players.
+     */
     int Game ::get_active_players_count() const
     {
         int count = 0;
@@ -52,21 +79,71 @@ namespace coup
         return count;
     }
 
-    std::vector<std::pair<std::string, std::string>> &Game::get_coup_list()
-    {
-        return coup_list;
-    }
-
+    /**
+     * @brief Returns a reference to the map of tax turns.
+     * @return std::map<std::string, int>& Tax turn mapping.
+     */
     std::map<std::string, int> &Game::get_tax_turns()
     {
         return tax_turns;
     }
 
-    void Game::add_to_coup(const std::string &attacker, const std::string &target)
+    /**
+     * @brief Gets the name of the last arrested player.
+     * @return const std::string& Name of the last arrested player.
+     */
+    const std::string &Game::get_last_arrested_name() const
     {
-        coup_list.emplace_back(attacker, target);
+        return last_arrested_name;
     }
 
+    /**
+     * @brief Sets the name of the last arrested player.
+     * @param name Name to set.
+     */
+    void Game::set_last_arrested_name(const std::string &name)
+    {
+        last_arrested_name = name;
+    }
+
+    /**
+     * @brief Adds a new player to the game.
+     * @param player Pointer to the player to add.
+     * @throws MaxPlayersExceededException if more than 6 players.
+     * @throws DuplicatePlayerNameException if name is already used.
+     */
+    void Game::add_player(Player *player)
+    {
+        if (players_list.size() >= 6)
+        {
+            throw MaxPlayersExceededException(); // limit reached
+        }
+        for (const auto &p : players_list)
+        {
+            if (p->get_name() == player->get_name())
+            {
+                throw DuplicatePlayerNameException(); // name already taken
+            }
+        }
+        players_list.push_back(player);
+    }
+
+    /**
+     * @brief Eliminates a player from the game.
+     * @param player Pointer to the player to eliminate.
+     */
+    void Game::remove_player(Player *player)
+    {
+        player->mark_eliminated();
+        if (turn_index >= players_list.size())
+            turn_index = 0;
+    }
+
+    /**
+     * @brief Returns the name of the player whose turn it is.
+     * @return string Player name.
+     * @throws GameNotStartedException if no players are in the game.
+     */
     string Game::turn() const
     {
         if (players_list.empty())
@@ -74,16 +151,22 @@ namespace coup
         return players_list[turn_index % players_list.size()]->get_name();
     }
 
-    vector<string> Game::players() const
+     /**
+     * @brief Adds an entry to the coup list (attacker, target).
+     * @param attacker Name of the attacking player.
+     * @param target Name of the target player.
+     */
+    void Game::add_to_coup(const std::string &attacker, const std::string &target)
     {
-        vector<string> names;
-        for (auto p : players_list)
-        {
-            names.push_back(p->get_name());
-        }
-        return names;
+        coup_list.emplace_back(attacker, target);
     }
 
+     /**
+     * @brief Determines the winner of the game.
+     * @return string Name of the winning player.
+     * @throws GameNotStartedException if no players left.
+     * @throws GameStillOngoingException if more than one player is active.
+     */
     string Game::winner() const
     {
         int alive_count = 0;
@@ -93,7 +176,7 @@ namespace coup
             if (!p->is_eliminated())
             {
                 alive_count++;
-                winner_name = p->get_name();
+                winner_name = p->get_name(); // keep last found alive player
             }
         }
         if (alive_count == 0)
@@ -107,6 +190,10 @@ namespace coup
         return winner_name;
     }
 
+    /**
+     * @brief Advances the turn to the next active player.
+     * Also resets round-based flags and handles special states.
+     */
     void Game::next_turn()
     {
         if (players_list.empty())
@@ -117,7 +204,7 @@ namespace coup
             int turns = get_current_player()->get_extra_turns();
             turns--;
             get_current_player()->set_extra_turns(turns);
-            return; // Stay on the same turn
+            return; // player gets another turn
         }
 
         Player *prev_player = get_current_player();
@@ -130,7 +217,7 @@ namespace coup
 
         global_turn_index++;
 
-        // The correct condition to reset FLAGS at the beginning of a new round
+        // new round: reset flags for role-based undo abilities
         if (global_turn_index % get_active_players_count() == 0)
         {
             current_round++;
@@ -149,30 +236,17 @@ namespace coup
 
         Player *current = players_list[turn_index];
 
-        // Clear coup records by validity
+        // remove coup records related to current turn player
         coup_list.erase(std::remove_if(coup_list.begin(), coup_list.end(),
                                        [this](const std::pair<std::string, std::string> &entry)
                                        {
-                                           return entry.first == turn();
+                                           return entry.first == turn(); // clear only records of current player
                                        }),
                         coup_list.end());
 
-        // Decrease timers of regular actions
-        for (auto it = last_actions.begin(); it != last_actions.end();)
-        {
-            it->second.second--;
-            if (it->second.second <= 0)
-            {
-                it = last_actions.erase(it);
-            }
-            else
-            {
-                ++it;
-            }
-        }
-        current->start_new_turn();
+        current->start_new_turn(); // reset internal states for the new turn
 
-        // Manage DISABLE TO ARREST state
+        // decrease "disable to arrest" counter for the previous player
         if (prev_player->get_disable_arrest_turns() > 0)
         {
             prev_player->set_disable_arrest_turns(prev_player->get_disable_arrest_turns() - 1);
@@ -183,61 +257,4 @@ namespace coup
             }
         }
     }
-
-    void Game::check_force_coup(Player *current_player)
-    {
-        // Cancelled: the logic is transferred to the GUI and the player is free to choose a target
-        if (current_player->get_coins() >= 10)
-        {
-            current_player->set_must_coup(true);
-        }
-        else
-        {
-            current_player->set_must_coup(false);
-        }
-    }
-
-    void Game::remove_player(Player *player)
-    {
-        player->mark_eliminated();
-        if (turn_index >= players_list.size())
-            turn_index = 0;
-    }
-
-    Player *Game::get_player(const string &name)
-    {
-        for (auto p : players_list)
-        {
-            if (p->get_name() == name)
-                return p;
-        }
-        throw PlayerNotFoundException(name);
-    }
-
-    Player *Game::get_current_player()
-    {
-        if (players_list.empty())
-            throw NoPlayersLeftException();
-        return players_list[turn_index];
-    }
-
-    void Game::set_last_arrested_name(const std::string &name)
-    {
-        last_arrested_name = name;
-    }
-
-    const std::string &Game::get_last_arrested_name() const
-    {
-        return last_arrested_name;
-    }
-    void Game::set_last_tax_player_name(const std::string &name)
-    {
-        last_tax_player_name = name;
-    }
-
-    const std::string &Game::get_last_tax_player_name() const
-    {
-        return last_tax_player_name;
-    }
-
 }
