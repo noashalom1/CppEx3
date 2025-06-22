@@ -2,7 +2,7 @@
 
 Button::Button(const std::string& text, const sf::Font& font,
                const sf::Vector2f& size, const sf::Vector2f& position) {
-    labelText = text; // שמירת טקסט הכפתור
+    labelText = text; //  Save button text
 
     shape.setSize(size);
     shape.setPosition(position);

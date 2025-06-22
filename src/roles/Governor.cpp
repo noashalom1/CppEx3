@@ -74,7 +74,7 @@ namespace coup
                 std::string message = name + " canceled " + target->get_name() + "'s tax. " +
                                       std::to_string(amount) + " coins were removed.";
 
-                // מחיקת הפעולה מההיסטוריה
+                // erase the action from history
                 history.erase(std::next(it).base());
                 mark_undo_tax_used();
 

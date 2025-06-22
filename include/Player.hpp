@@ -16,11 +16,9 @@ namespace coup
     class Player
     {
     private:
-        
         bool eliminated = false;
         bool disable_to_arrest = false;
         
-
     protected:
         Game &game;
         std::string name;
@@ -102,8 +100,6 @@ namespace coup
             }
             reset_used_bribe();
         }
-
-        
     };
 
 }

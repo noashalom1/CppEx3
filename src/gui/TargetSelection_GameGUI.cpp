@@ -15,6 +15,17 @@
 using namespace coup;
 using namespace sf;
 
+/**
+ * @brief Displays a list of target players and sets the game state to TargetSelection.
+ *
+ * This function is used to allow the user to select a target for a role-specific or general action (e.g., arrest, sanction, peek).
+ * It builds a list of buttons representing valid target players, executes the provided action when a target is selected,
+ * and provides a back button to return to the InGame state.
+ *
+ * @param action The action to be executed on the selected player.
+ * @param includeCurrentPlayer Whether to include the current player as a valid target.
+ * @param targets A predefined list of candidate targets to filter and show.
+ */
 void GameGUI::showTargetSelection(std::function<void(Player *)> action, bool includeCurrentPlayer, const std::vector<Player *> &targets)
 {
     state = GUIState::TargetSelection;
@@ -28,30 +39,31 @@ void GameGUI::showTargetSelection(std::function<void(Player *)> action, bool inc
 
     if (!targets.empty())
     {
-        // סינון לפי includeCurrentPlayer רק אם current נמצא ברשימה
+        // Filter the provided targets based on includeCurrentPlayer
         for (Player *p : targets)
         {
             if (!includeCurrentPlayer && p == current)
             {
-                continue; // דלג על current player
+                continue; // Skip current player if not allowed
             }
             finalTargets.push_back(p);
         }
     }
     else
     {
-        inGameError = "No targets available."; // fallback חסום
+        inGameError = "No targets available."; // No valid targets found
         state = GUIState::InGame;
         return;
     }
 
+    // Create a button for each valid target
     for (Player *p : finalTargets)
     {
         Button btn(p->get_name(), font, {200, 40}, {400, y});
         btn.setAction([this, p]()
                       {
             try {
-                targetAction(p);  
+                targetAction(p); // Execute the action on the selected player
                 state = GUIState::InGame;
                 targetButtons.clear();
             } catch (const GameException& e) {
@@ -63,8 +75,8 @@ void GameGUI::showTargetSelection(std::function<void(Player *)> action, bool inc
         targetButtons.push_back(btn);
         y += 50;
     }
-    // כפתור BACK
 
+    // BACK button to return to game without choosing a target
     Button backBtn("Back", font, {150, 40}, {50, 650});
     backBtn.setAction([this]()
                       {

@@ -15,6 +15,18 @@
 using namespace coup;
 using namespace sf;
 
+/**
+ * @brief Adds role-specific action buttons for each player with a given role.
+ *
+ * For each player with the specified role, creates a button labeled with a prefix and the player's name.
+ * Each button, when clicked, executes the given action on the specific player.
+ *
+ * @param role The role name (e.g., "Governor", "Spy").
+ * @param buttonPrefix The text prefix to use for each button label.
+ * @param startY The starting Y position for placing buttons.
+ * @param actionPerPlayer A lambda function to perform the action on a player.
+ * @return int The number of buttons created.
+ */
 int GameGUI::addRoleActionButtons(const std::string &role,
                                   const std::string &buttonPrefix,
                                   float startY,
@@ -31,7 +43,7 @@ int GameGUI::addRoleActionButtons(const std::string &role,
 
     if (rolePlayers.empty())
     {
-        return 0; // אל תיצור כפתורים בכלל
+        return 0; // Don't create buttons at all
     }
 
     float y = startY;
@@ -43,6 +55,7 @@ int GameGUI::addRoleActionButtons(const std::string &role,
         y += 40;
         count++;
 
+        // Button action includes validation (e.g., eliminated player) and then executes action
         btn.setAction([this, p, actionPerPlayer]()
                       {
             try {
@@ -73,11 +86,18 @@ int GameGUI::addRoleActionButtons(const std::string &role,
     return count;
 }
 
+/**
+ * @brief Sets up the GUI buttons for the current player's available actions.
+ *
+ * Adds general action buttons (gather, tax, bribe, arrest, sanction, coup),
+ * and role-specific or special buttons depending on the player's role.
+ */
 void GameGUI::setupButtons()
 {
     Player *p = game.get_current_player();
     std::string role = p->role();
 
+    // Player action: Gather
     Button gatherBtn("Gather", font, sf::Vector2f(150, 40), sf::Vector2f(50, 100));
     gatherBtn.setAction([this]()
                         {
@@ -87,6 +107,7 @@ void GameGUI::setupButtons()
         inGameError.clear(); });
     buttons.push_back(gatherBtn);
 
+    // Player action: Tax
     Button taxBtn("Tax", font, sf::Vector2f(150, 40), sf::Vector2f(50, 160));
     taxBtn.setAction([this]()
                      {
@@ -96,6 +117,7 @@ void GameGUI::setupButtons()
         inGameError.clear(); });
     buttons.push_back(taxBtn);
 
+    // Player action: Bribe
     Button bribeBtn("Bribe", font, sf::Vector2f(150, 40), sf::Vector2f(50, 220));
     bribeBtn.setAction([this]()
                        {
@@ -105,6 +127,7 @@ void GameGUI::setupButtons()
         inGameError.clear(); });
     buttons.push_back(bribeBtn);
 
+    // Player action: Arrest
     Button arrestBtn("Arrest", font, sf::Vector2f(150, 40), sf::Vector2f(50, 280));
     arrestBtn.setAction([this]()
                         { showTargetSelection([this](Player *target)
@@ -116,12 +139,13 @@ void GameGUI::setupButtons()
                             "! " + p->get_name() + " has " + std::to_string(p->get_coins()) + " coins.";
             inGameError.clear();
         } catch (const std::exception& e) {
-            inGameError = e.what();     // תופס את השגיאה מתוך arrest
+            inGameError = e.what();     // Catch the error from arrest
             actionMessage.clear();
         } }, false, game.get_players()); });
 
     buttons.push_back(arrestBtn);
 
+    // Player action: Sanction
     Button sanctionBtn("Sanction", font, sf::Vector2f(150, 40), sf::Vector2f(50, 340));
     sanctionBtn.setAction([this]()
                           { showTargetSelection([this](Player *target)
@@ -132,6 +156,7 @@ void GameGUI::setupButtons()
             inGameError.clear(); }, false, game.get_players()); });
     buttons.push_back(sanctionBtn);
 
+    // Player action: Coup
     Button coupBtn("Coup", font, sf::Vector2f(150, 40), sf::Vector2f(50, 400));
     coupBtn.setAction([this]()
                       {
@@ -182,7 +207,6 @@ void GameGUI::setupButtons()
     }
 
     // Special actions - top right corner
-
     float y = 50;
 
     // Governor: Undo Tax
@@ -213,7 +237,7 @@ void GameGUI::setupButtons()
     // Spy: Peek and Disable
     y += 40 * addRoleActionButtons("Spy", "Peek and Disable", y, [this](Player *p)
                                    {
-    // סינון של מטרות: רק שחקנים בחיים ולא השחקן עצמו
+    // Filtering targets: only living players and not the player themselves
     std::vector<Player*> filteredTargets;
     for (Player* target : game.get_players()) {
         if (!target->is_eliminated() && target != p) {
@@ -221,7 +245,7 @@ void GameGUI::setupButtons()
         }
     }
 
-    // אם אין מטרות מתאימות
+    // no valid targets available
     if (filteredTargets.empty()) {
         inGameError = "No valid targets available.";
         return;
@@ -243,13 +267,13 @@ void GameGUI::setupButtons()
                 actionMessage.clear();
             }
         },
-        true, // לא לכלול את current player
+        true, // Don't include the current player
         filteredTargets); });
 
     // General: Undo Coup
     y += 40 * addRoleActionButtons("General", "Undo Coup", y, [this](Player *p)
                                    {
-    // מקבל את רשימת הקורבנות מהמכונה עצמה
+    // Get the list of victims from the game itself
     std::vector<Player*> targets;
     for (const auto& entry : game.get_coup_list()) {
         std::cout << "  Attacker: " << entry.first << ", Target: " << entry.second << std::endl;
@@ -268,7 +292,7 @@ void GameGUI::setupButtons()
                 actionMessage = result;
                 inGameError.clear();
             } catch (const std::exception& ex) {
-                inGameError = ex.what();  // הצגת שגיאה בלבד
+                inGameError = ex.what();  // Show error only
             }
         },
         false,
@@ -278,14 +302,14 @@ void GameGUI::setupButtons()
     Button newGameBtn("New Game", font, sf::Vector2f(150, 40), sf::Vector2f(800, 650));
     newGameBtn.setAction([this]()
                          {
-                             game = Game();           // אפס את מצב המשחק
-                             tempNames.clear();       // נקה שמות זמניים
-                             tempRoles.clear();       // נקה תפקידים זמניים
-                             buttons.clear();         // נקה כפתורים
-                             actionMessage.clear();   // נקה הודעות פעולה
-                             inGameError.clear();     // נקה הודעות שגיאה
-                             targetButtons.clear();   // נקה כפתורי מטרה אם קיימים
-                             state = GUIState::Setup; // חזור למסך הגדרות
+                             game = Game();           // Reset the game state
+                             tempNames.clear();       // Clear temporary names
+                             tempRoles.clear();       // Clear temporary roles
+                             buttons.clear();         // Clear buttons
+                             actionMessage.clear();   // Clear action messages
+                             inGameError.clear();     // Clear error messages
+                             targetButtons.clear();   // Clear target buttons if they exist
+                             state = GUIState::Setup; // Return to setup screen
                          });
     buttons.push_back(newGameBtn);
 }

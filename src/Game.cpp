@@ -21,6 +21,7 @@ namespace coup
     {
         return players_list;
     }
+
     void Game::add_player(Player *player)
     {
         if (players_list.size() >= 6)
@@ -114,7 +115,7 @@ namespace coup
             int turns = get_current_player()->get_extra_turns();
             turns--;
             get_current_player()->set_extra_turns(turns);
-            return; // נשאר באותו תור
+            return; // Stay on the same turn
         }
 
         Player *prev_player = get_current_player();
@@ -127,7 +128,7 @@ namespace coup
 
         global_turn_index++;
 
-        // ✅ התנאי הנכון לאיפוס FLAGS בתחילת סבב חדש
+        // The correct condition to reset FLAGS at the beginning of a new round
         if (global_turn_index % get_active_players_count() == 0)
         {
             current_round++;
@@ -146,7 +147,7 @@ namespace coup
 
         Player *current = players_list[turn_index];
 
-        // מנקה רשומות coup לפי תוקף
+        // Clear coup records by validity
         coup_list.erase(std::remove_if(coup_list.begin(), coup_list.end(),
                                        [this](const std::pair<std::string, std::string> &entry)
                                        {
@@ -154,7 +155,7 @@ namespace coup
                                        }),
                         coup_list.end());
 
-        // הפחתת טיימרים של פעולות רגילות
+        // Decrease timers of regular actions
         for (auto it = last_actions.begin(); it != last_actions.end();)
         {
             it->second.second--;
@@ -169,7 +170,7 @@ namespace coup
         }
         current->start_new_turn();
 
-        // ניהול מצב של DISABLE TO ARREST
+        // Manage DISABLE TO ARREST state
         if (prev_player->get_disable_arrest_turns() > 0)
         {
             prev_player->set_disable_arrest_turns(prev_player->get_disable_arrest_turns() - 1);
@@ -183,7 +184,7 @@ namespace coup
 
     void Game::check_force_coup(Player *current_player)
     {
-        // מבוטל: הלוגיקה מועברת לGUI והשחקן חופשי לבחור מטרה
+        // Cancelled: the logic is transferred to the GUI and the player is free to choose a target
         if (current_player->get_coins() >= 10)
         {
             current_player->set_must_coup(true);

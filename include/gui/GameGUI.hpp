@@ -28,7 +28,6 @@ public:
                              const std::string &buttonPrefix,
                              float startY,
                              std::function<void(Player *)> actionPerPlayer);
-
     std::string inGameError;
 
 private:

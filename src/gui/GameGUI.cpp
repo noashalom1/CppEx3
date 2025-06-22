@@ -14,17 +14,25 @@
 
 using namespace coup;
 using namespace sf;
-
+/**
+ * @brief Constructs the main GameGUI window and initializes the setup screen.
+ *
+ * Loads the font, creates input fields and buttons for adding players and starting the game.
+ * Also sets their associated callback actions, including validation and role assignment.
+ */
 GameGUI::GameGUI() : window(VideoMode(1000, 700), "Coup Interactive GUI")
 {
     if (!font.loadFromFile("arial.ttf"))
     {
         throw std::runtime_error("Failed to load font");
     }
-    srand(time(nullptr));
+    srand(time(nullptr)); // Initialize random seed for role assignment
+
+    // Create name input box
     nameBox = new TextBox(font, {300, 30}, {50, 50});
     nameBox->setSelected(true);
 
+    // Create "Add Player" button with validation logic
     addPlayerBtn = new Button("Add Player", font, {150, 40}, {370, 50});
     addPlayerBtn->setAction([this]()
                             {
@@ -34,6 +42,7 @@ GameGUI::GameGUI() : window(VideoMode(1000, 700), "Coup Interactive GUI")
             return;
         }
 
+        // Prevent duplicate names
         if (std::find(tempNames.begin(), tempNames.end(), name) != tempNames.end()) {
             setupError = "Name already exists. Please choose a different one.";
             nameBox->clear();
@@ -41,6 +50,7 @@ GameGUI::GameGUI() : window(VideoMode(1000, 700), "Coup Interactive GUI")
             return;
         }
         
+        // Limit to 6 players
         if (tempNames.size() >= 6) {
             setupError = "Cannot add more than 6 players";
             return;
@@ -50,6 +60,7 @@ GameGUI::GameGUI() : window(VideoMode(1000, 700), "Coup Interactive GUI")
         nameBox->clear();
         setupError.clear(); });
 
+    // Create "Start Game" button and assign role-based players
     startGameBtn = new Button("Start Game", font, {150, 40}, {50, 100});
     startGameBtn->setAction([this]()
                             {
@@ -69,6 +80,8 @@ GameGUI::GameGUI() : window(VideoMode(1000, 700), "Coup Interactive GUI")
 
         setupButtons();
         state = GUIState::InGame; });
+
+    // Create "Demo Game" button to auto-populate 6 predefined players
     demoGameBtn = new Button("Demo Game", font, {150, 40}, {220, 100});
     demoGameBtn->setAction([this]()
                            {
@@ -81,6 +94,12 @@ GameGUI::GameGUI() : window(VideoMode(1000, 700), "Coup Interactive GUI")
             setupError.clear(); });
 }
 
+/**
+ * @brief Runs the main event loop of the GUI.
+ *
+ * Handles input events (mouse, keyboard), updates the game state, checks for a winner,
+ * and draws all relevant elements (players, buttons, messages) to the window.
+ */
 void GameGUI::run()
 {
     while (window.isOpen())
@@ -88,6 +107,7 @@ void GameGUI::run()
         Event event;
         while (window.pollEvent(event))
         {
+
             if (event.type == Event::Closed)
                 window.close();
             else if (event.type == Event::MouseButtonPressed)
@@ -114,8 +134,8 @@ void GameGUI::run()
                             try
                             {
                                 btn.execute();
-                                buttons.clear();
-                                setupButtons();
+                                buttons.clear(); // Rebuild buttons after action
+                                setupButtons();  // Refresh available actions
                             }
                             catch (const GameException &e)
                             {
@@ -168,9 +188,9 @@ void GameGUI::run()
             }
         }
 
-        window.clear(Color(50, 50, 50));
+        window.clear(Color(50, 50, 50)); // Background color
 
-        // ✅ בדיקת ניצחון רק אם עוד לא זוהה ניצחון
+        // Check for winner if no one has won yet
         if (!showVictory)
         {
             try
@@ -242,7 +262,7 @@ void GameGUI::run()
                 window.draw(msgText);
             }
 
-            drawPlayerList();
+            drawPlayerList(); // Draw the list of all players and statuses
 
             if (showVictory)
             {
@@ -288,10 +308,17 @@ void GameGUI::run()
             }
         }
 
-        window.display();
+        window.display(); // Present everything to the screen
     }
 }
 
+/**
+ * @brief Returns a randomly selected role for a player.
+ *
+ * Used when creating players dynamically or in demo mode.
+ *
+ * @return std::string The selected role name.
+ */
 std::string GameGUI::randomRole()
 {
     std::vector<std::string> roles = {"Governor", "Spy", "Baron", "General", "Judge", "Merchant"};
