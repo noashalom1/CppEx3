@@ -6,6 +6,9 @@
 namespace coup
 {
 
+    /**
+     * @brief Constructs a new Player object with default status and 0 coins.
+     */
     Player::Player(Game &game, const std::string &name)
         : eliminated(false),
           disable_to_arrest(false),
@@ -21,8 +24,16 @@ namespace coup
     {
     }
 
+    /**
+     * @brief Virtual destructor for Player.
+     */
     Player::~Player() {}
 
+    /**
+     * @brief Performs the gather action (gain 1 coin).
+     * @throws MustPerformCoupException if player must coup.
+     * @throws SanctionedException if player is sanctioned.
+     */
     void Player::gather()
     {
         check_turn();
@@ -34,6 +45,11 @@ namespace coup
         game.next_turn();
     }
 
+    /**
+     * @brief Performs the tax action (gain 2 coins and record the action).
+     * @throws MustPerformCoupException if player must coup.
+     * @throws SanctionedException if player is sanctioned.
+     */
     void Player::tax()
     {
         check_turn();
@@ -43,10 +59,15 @@ namespace coup
             throw SanctionedException();
         coins += 2;
         game.get_action_history().emplace_back(name, "tax", game.get_current_round());
-        game.get_tax_turns()[name] = game.get_global_turn_index();
+        game.get_tax_turns()[name] = game.get_global_turn_index(); // Track tax turn
         game.next_turn();
     }
 
+    /**
+     * @brief Performs the bribe action (pay 4 coins to gain 2 extra turns).
+     * @throws MustPerformCoupException if player must coup.
+     * @throws NotEnoughCoinsException if player has fewer than 4 coins.
+     */
     void Player::bribe()
     {
         check_turn();
@@ -54,12 +75,16 @@ namespace coup
             throw MustPerformCoupException();
         if (coins < 4)
             throw NotEnoughCoinsException(4, coins);
-        coins -= 4;
-        extra_turns = 2;
-        mark_used_bribe();
+        coins -= 4; // Pay 4 coins
+        extra_turns = 2; // Gain 2 extra turns
+        mark_used_bribe(); // Set bribe used flag
         game.next_turn();
     }
 
+    /**
+     * @brief Arrests the target player and adjusts coins based on role.
+     * @throws Multiple exceptions for invalid arrest conditions.
+     */
     void Player::arrest(Player &target)
     {
         check_turn();
@@ -77,7 +102,7 @@ namespace coup
         {
             if (target.get_coins() <= 0)
                 throw TargetNoCoinsException();
-            coins++;
+            coins++; // Steal 1 coin from General
         }
         else if (target.role() == "Merchant")
         {
@@ -89,13 +114,17 @@ namespace coup
         {
             if (target.get_coins() <= 0)
                 throw TargetNoCoinsException();
-            target.coins--;
-            coins++;
+            target.coins--; // Target loses 1 coin
+            coins++; // Attacker gains 1 coin
         }
-        game.set_last_arrested_name(target.get_name());
+        game.set_last_arrested_name(target.get_name()); // Save last arrested
         game.next_turn();
     }
 
+    /**
+     * @brief Sanctions another player, optionally rewarding Barons.
+     * @throws Multiple exceptions for invalid target or insufficient coins.
+     */
     void Player::sanction(Player &target)
     {
         check_turn();
@@ -112,10 +141,14 @@ namespace coup
         if ((target.role() == "Judge" && coins < 4) || coins < 3)
             throw NotEnoughCoinsException(target.role() == "Judge" ? 4 : 3, coins);
         target.role() == "Judge" ? coins -= 4 : coins -= 3; // Judge costs 4, others cost 3
-        target.mark_sanctioned(name);
+        target.mark_sanctioned(name); // Apply sanction
         game.next_turn();
     }
 
+    /**
+     * @brief Performs a coup on another player, eliminating them.
+     * @throws Multiple exceptions for invalid target or insufficient coins.
+     */
     void Player::coup(Player &target)
     {
         check_turn();
@@ -125,19 +158,27 @@ namespace coup
             throw TargetIsAlreadyEliminatedException();
         if (target.get_name() == name)
             throw CannotTargetYourselfException();
-        game.remove_player(&target);
-        game.add_to_coup(name, target.get_name());
-        coins -= 7;
+        game.remove_player(&target); // Eliminate player
+        game.add_to_coup(name, target.get_name()); // Log coup
+        coins -= 7; // Pay for coup
         game.next_turn();
     }
 
-     void Player::check_turn() const
+    /**
+     * @brief Verifies that it's this player's turn.
+     * @throws NotYourTurnException if it's not their turn.
+     */
+    void Player::check_turn() const
     {
         if (game.turn() != name)
             throw NotYourTurnException();
-        ;
+        
     }
 
+    /**
+     * @brief Revives the player if previously eliminated.
+     * @throws TargetNotEliminatedException if player is still active.
+     */
     void Player::revive()
     {
         if (!is_eliminated())
@@ -145,6 +186,11 @@ namespace coup
         eliminated = false;
     }
 
+     /**
+     * @brief Decreases player's coin count.
+     * @param amount Number of coins to remove.
+     * @throws NotEnoughCoinsException if not enough coins available.
+     */
     void Player::decrease_coins(int amount)
     {
         if (coins < amount)
@@ -154,21 +200,32 @@ namespace coup
         coins -= amount;
     }
 
+    /**
+     * @brief Increases player's coin count.
+     * @param amount Number of coins to add.
+     */
     void Player::increase_coins(int amount)
     {
         coins += amount;
     }
 
+    /**
+     * @brief Marks the player as sanctioned by another player.
+     * @param by_whom Name of the player who sanctioned.
+     */
     void Player::mark_sanctioned(const std::string &by_whom)
     {
         sanctioned = true;
         sanctioned_by = by_whom;
     }
 
+    /**
+     * @brief Clears any active sanctions on the player.
+     */
     void Player::clear_sanctioned()
     {
         sanctioned = false;
-        sanctioned_by.clear();
+        sanctioned_by.clear(); // Reset source of sanction
     }
 
 

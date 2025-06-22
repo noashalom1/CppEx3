@@ -303,13 +303,13 @@ void GameGUI::setupButtons()
     Button newGameBtn("New Game", font, sf::Vector2f(150, 40), sf::Vector2f(800, 650));
     newGameBtn.setAction([this]()
                          {
-                             game = Game();           // Reset the game state
-                             tempNames.clear();       // Clear temporary names
-                             tempRoles.clear();       // Clear temporary roles
-                             buttons.clear();         // Clear buttons
-                             actionMessage.clear();   // Clear action messages
-                             inGameError.clear();     // Clear error messages
-                             targetButtons.clear();   // Clear target buttons if they exist
+                             game = Game(); // Reset the game state
+                             tempNames.clear(); // Clear temporary names
+                             tempRoles.clear(); // Clear temporary roles
+                             buttons.clear(); // Clear buttons
+                             actionMessage.clear(); // Clear action messages
+                             inGameError.clear(); // Clear error messages
+                             targetButtons.clear(); // Clear target buttons if they exist
                              state = GUIState::Setup; // Return to setup screen
                          });
     buttons.push_back(newGameBtn);

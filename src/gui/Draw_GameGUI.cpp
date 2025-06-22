@@ -29,11 +29,11 @@ using namespace sf;
  */
 void GameGUI::drawPlayerList()
 {
-    float startY = 500;                        // Starting Y-coordinate for the first player's label
+    float startY = 500; // Starting Y-coordinate for the first player's label
     for (const Player *p : game.get_players()) // Iterate over all players in the game
     {
         sf::Text info;
-        info.setFont(font);        // Use the main game font
+        info.setFont(font);  // Use the main game font
         info.setCharacterSize(16); // Set readable text size
         // Construct the label with player name and role
         std::string label = p->get_name() + " - " + p->role();
@@ -63,9 +63,9 @@ void GameGUI::drawPlayerList()
             info.setFillColor(sf::Color::White);
         }
 
-        info.setString(label);         // Set the player's label as the text content
+        info.setString(label); // Set the player's label as the text content
         info.setPosition(700, startY); // Position the text on the screen
-        window.draw(info);             // Draw the text to the window
-        startY += 25;                  // Move down for the next player entry
+        window.draw(info); // Draw the text to the window
+        startY += 25; // Move down for the next player entry
     }
 }
