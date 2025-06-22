@@ -1,5 +1,5 @@
-#ifndef GOVERNOR_HPP
-#define GOVERNOR_HPP
+// Author: noapatito123@gmail.com
+#pragma once
 
 #include "Player.hpp"
 
@@ -21,4 +21,3 @@ namespace coup {
     
 }
 
-#endif

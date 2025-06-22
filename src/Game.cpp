@@ -216,7 +216,7 @@ namespace coup
     Player *Game::get_current_player()
     {
         if (players_list.empty())
-            throw NoPlayersLeft();
+            throw NoPlayersLeftException();
         return players_list[turn_index];
     }
 

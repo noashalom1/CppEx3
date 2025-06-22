@@ -1,6 +1,5 @@
 // Author: noapatito123@gmail.com
-#ifndef TEXTBOX_HPP
-#define TEXTBOX_HPP
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <string>
@@ -22,5 +21,3 @@ public:
     std::string getText() const;
     void clear();
 };
-
-#endif

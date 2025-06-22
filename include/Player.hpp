@@ -1,6 +1,5 @@
 //Author: noapatito123@gmail.com
-#ifndef PLAYER_HPP
-#define PLAYER_HPP
+#pragma once
 
 #include <string>
 #include <set>
@@ -103,4 +102,4 @@ namespace coup
 
 }
 
-#endif
+

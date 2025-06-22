@@ -1,5 +1,5 @@
-#ifndef GENERAL_HPP
-#define GENERAL_HPP
+// Author: noapatito123@gmail.com
+#pragma once
 
 #include "Player.hpp"
 
@@ -22,4 +22,3 @@ namespace coup
 
 }
 
-#endif

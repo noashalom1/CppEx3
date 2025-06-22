@@ -133,7 +133,7 @@ namespace coup
         if (coins < 7)
             throw NotEnoughCoinsException(7, coins);
         if (target.is_eliminated())
-            throw TargetIsAlreadyEliminated();
+            throw TargetIsAlreadyEliminatedException();
         if (target.get_name() == name)
             throw CannotTargetYourselfException();
         game.remove_player(&target);

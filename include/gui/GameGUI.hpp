@@ -1,6 +1,5 @@
 // Author: noapatito123@gmail.com
-#ifndef GAMEGUI_HPP
-#define GAMEGUI_HPP
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <vector>
@@ -58,4 +57,3 @@ private:
 
 } // namespace coup
 
-#endif

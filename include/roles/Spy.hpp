@@ -1,5 +1,5 @@
-#ifndef SPY_HPP
-#define SPY_HPP
+// Author: noapatito123@gmail.com
+#pragma once
 
 #include "Player.hpp"
 
@@ -22,4 +22,4 @@ namespace coup {
 
 }
 
-#endif
+

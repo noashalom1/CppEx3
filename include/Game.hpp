@@ -1,6 +1,5 @@
 // Author: noapatito123@gmail.com
-#ifndef GAME_HPP
-#define GAME_HPP
+#pragma once
 
 #include <vector>
 #include <string>
@@ -80,4 +79,4 @@ namespace coup
 
 }
 
-#endif
+

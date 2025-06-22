@@ -16,6 +16,7 @@ SRC = src/Game.cpp \
       src/Button.cpp \
       src/TextBox.cpp \
       src/main.cpp \
+      src/exceptions.cpp \
       src/roles/Governor.cpp \
       src/roles/Spy.cpp \
       src/roles/Baron.cpp \

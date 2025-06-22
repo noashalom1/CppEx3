@@ -1,6 +1,5 @@
 // Author: noapatito123@gmail.com
-#ifndef BUTTON_HPP
-#define BUTTON_HPP
+#pragma once
 
 #include <SFML/Graphics.hpp>
 #include <functional>
@@ -23,4 +22,4 @@ public:
     const std::string& getLabel() const;
 };
 
-#endif
+

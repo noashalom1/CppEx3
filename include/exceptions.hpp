@@ -1,185 +1,210 @@
 // Author: noapatito123@gmail.com
-#ifndef EXCEPTIONS_HPP
-#define EXCEPTIONS_HPP
+#pragma once
 
 #include <stdexcept>
 #include <string>
 
 namespace coup
 {
-
+    // Base class for all custom exceptions
     class GameException : public std::runtime_error
     {
     public:
-        explicit GameException(const std::string &msg) : std::runtime_error(msg) {}
+        GameException(const std::string &msg) : std::runtime_error(msg) {}
+        virtual ~GameException() {}
     };
+
+    // Centralized strings for all exception messages
+    namespace GameExceptionStrings
+    {
+        extern const char *NotYourTurn;
+        extern const std::string Sanctioned;
+        extern const std::string AlreadySanctioned;
+        extern const std::string MaxPlayersExceeded;
+        extern const std::string DuplicateArrest;
+        extern const std::string MustPerformCoup;
+        extern const std::string TargetNoCoins;
+        extern const std::string DuplicatePlayerName;
+        extern const std::string GameStillOngoing;
+        extern const std::string GameNotStarted;
+        extern const std::string NoPlayersLeft;
+        extern const std::string TargetIsAlreadyEliminated;
+        extern const std::string TargetIsEliminated;
+        extern const std::string TargetNotEliminated;
+        extern const std::string InvalidBribeUndo;
+        extern const std::string CannotTargetYourself;
+        extern const std::string ArrestBlocked;
+
+        // Dynamic messages
+        std::string NotEnoughCoins(int required, int curr);
+        std::string PlayerNotFound(const std::string &name);
+        std::string UndoNotAllowed(const std::string &target_name, const std::string &action);
+        std::string ActionAlreadyUsedThisRound(const std::string &name, const std::string &action);
+        std::string PlayerEliminated(const std::string &name);
+        std::string ActionTooOld(const std::string &actor, const std::string &action);
+        std::string CannotUndoOwnAction(const std::string &name, const std::string &action);
+        std::string NoRecentActionToUndo(const std::string &action);
+    }
+
+    // === Specific Exceptions ===
 
     class NotYourTurnException : public GameException
     {
     public:
-        NotYourTurnException() : GameException("Not your turn.") {}
+        NotYourTurnException() : GameException(GameExceptionStrings::NotYourTurn) {}
     };
 
     class SanctionedException : public GameException
     {
     public:
-        SanctionedException() : GameException("You are sanctioned and cannot perform this action.") {}
+        SanctionedException() : GameException(GameExceptionStrings::Sanctioned) {}
     };
 
     class AlreadySanctionedException : public GameException
     {
     public:
-        AlreadySanctionedException() : GameException("Target is already sanctioned.") {}
+        AlreadySanctionedException() : GameException(GameExceptionStrings::AlreadySanctioned) {}
     };
 
     class NotEnoughCoinsException : public GameException
     {
     public:
-        NotEnoughCoinsException(int required, int curr) : GameException("Not enough coins. Required: " + std::to_string(required) + ", but have: " + std::to_string(curr)) {}
+        NotEnoughCoinsException(int required, int current)
+            : GameException(GameExceptionStrings::NotEnoughCoins(required, current)) {}
     };
 
     class MaxPlayersExceededException : public GameException
     {
     public:
-        MaxPlayersExceededException() : GameException("Cannot add more than 6 players.") {}
+        MaxPlayersExceededException() : GameException(GameExceptionStrings::MaxPlayersExceeded) {}
     };
 
     class DuplicateArrestException : public GameException
     {
     public:
-        DuplicateArrestException() : GameException("Cannot arrest the same player twice in a row.") {}
+        DuplicateArrestException() : GameException(GameExceptionStrings::DuplicateArrest) {}
     };
 
     class MustPerformCoupException : public GameException
     {
     public:
-        MustPerformCoupException() : GameException("You must perform a COUP when you have 10 or more coins.") {}
+        MustPerformCoupException() : GameException(GameExceptionStrings::MustPerformCoup) {}
     };
 
     class TargetNoCoinsException : public GameException
     {
     public:
-        TargetNoCoinsException() : GameException("Target has no coins to arrest.") {}
+        TargetNoCoinsException() : GameException(GameExceptionStrings::TargetNoCoins) {}
     };
 
     class DuplicatePlayerNameException : public GameException
     {
     public:
-        DuplicatePlayerNameException() : GameException("Player name already exists.") {}
+        DuplicatePlayerNameException() : GameException(GameExceptionStrings::DuplicatePlayerName) {}
     };
 
     class GameStillOngoingException : public GameException
-    { //
+    {
     public:
-        GameStillOngoingException() : GameException("Game is still ongoing, more than one player remains.") {}
+        GameStillOngoingException() : GameException(GameExceptionStrings::GameStillOngoing) {}
     };
 
     class GameNotStartedException : public GameException
     {
     public:
-        GameNotStartedException() : GameException("Not enough players to start the game.") {}
+        GameNotStartedException() : GameException(GameExceptionStrings::GameNotStarted) {}
     };
 
-    class PlayerNotFoundException : public GameException
+    class NoPlayersLeftException : public GameException
     {
     public:
-        explicit PlayerNotFoundException(const std::string &name) : GameException("Player not found: " + name) {}
+        NoPlayersLeftException() : GameException(GameExceptionStrings::NoPlayersLeft) {}
     };
 
-    class NoPlayersLeft : public GameException
+    class TargetIsAlreadyEliminatedException : public GameException
     {
     public:
-        NoPlayersLeft() : GameException("No players left.") {}
-    };
-
-    class UndoNotAllowedException : public GameException
-    {
-    public:
-        UndoNotAllowedException(const std::string &target_name, const std::string &action)
-            : GameException(target_name + " has not used " + action + ".") {}
-    };
-
-    class TargetIsAlreadyEliminated : public GameException
-    {
-    public:
-        TargetIsAlreadyEliminated() : GameException("Target is already eliminated.") {}
+        TargetIsAlreadyEliminatedException() : GameException(GameExceptionStrings::TargetIsAlreadyEliminated) {}
     };
 
     class TargetIsEliminatedException : public GameException
     {
     public:
-        TargetIsEliminatedException()
-            : GameException("Cannot target an eliminated player.") {}
+        TargetIsEliminatedException() : GameException(GameExceptionStrings::TargetIsEliminated) {}
     };
 
-    // כאשר שחקן כבר ביצע פעולה כלשהי בסיבוב הנוכחי
+    class TargetNotEliminatedException : public GameException
+    {
+    public:
+        TargetNotEliminatedException() : GameException(GameExceptionStrings::TargetNotEliminated) {}
+    };
+
+    class PlayerNotFoundException : public GameException
+    {
+    public:
+        PlayerNotFoundException(const std::string &name)
+            : GameException(GameExceptionStrings::PlayerNotFound(name)) {}
+    };
+
+    class UndoNotAllowedException : public GameException
+    {
+    public:
+        UndoNotAllowedException(const std::string &name, const std::string &action)
+            : GameException(GameExceptionStrings::UndoNotAllowed(name, action)) {}
+    };
+
     class ActionAlreadyUsedThisRoundException : public GameException
     {
     public:
         ActionAlreadyUsedThisRoundException(const std::string &name, const std::string &action)
-            : GameException(name + std::string(" has already used ") + action + std::string(" this round.")) {}
+            : GameException(GameExceptionStrings::ActionAlreadyUsedThisRound(name, action)) {}
     };
 
-    // כאשר השחקן המטרה לא מודח
-    class TargetNotEliminatedException : public GameException
-    {
-    public:
-        TargetNotEliminatedException() : GameException("Target is not eliminated.") {}
-    };
-
-    // כאשר השחקן שמנסה לבצע פעולה מודח בעצמו
     class PlayerEliminatedException : public GameException
     {
     public:
-        explicit PlayerEliminatedException(const std::string &name)
-            : GameException(name + " is eliminated.") {}
+        PlayerEliminatedException(const std::string &name)
+            : GameException(GameExceptionStrings::PlayerEliminated(name)) {}
     };
 
-    // כאשר מנסים לבטל פעולה ישנה מדי
     class ActionTooOldException : public GameException
     {
     public:
-        explicit ActionTooOldException(const std::string &actor, const std::string &action)
-            : GameException(actor + "'s " + action + " is too old.") {}
+        ActionTooOldException(const std::string &actor, const std::string &action)
+            : GameException(GameExceptionStrings::ActionTooOld(actor, action)) {}
     };
 
-    // כאשר שחקן מנסה לבטל את הפעולה של עצמו
     class CannotUndoOwnActionException : public GameException
     {
     public:
-        explicit CannotUndoOwnActionException(const std::string &name, const std::string &action)
-            : GameException(name + " cannot undo their own " + action + ".") {}
+        CannotUndoOwnActionException(const std::string &name, const std::string &action)
+            : GameException(GameExceptionStrings::CannotUndoOwnAction(name, action)) {}
     };
 
-    // כאשר אין פעולה אחרונה לביטול
     class NoRecentActionToUndoException : public GameException
     {
     public:
-        explicit NoRecentActionToUndoException(const std::string &action)
-            : GameException("No recent " + action + " by another player to undo.") {}
+        NoRecentActionToUndoException(const std::string &action)
+            : GameException(GameExceptionStrings::NoRecentActionToUndo(action)) {}
     };
 
     class InvalidBribeUndoException : public GameException
     {
     public:
-        InvalidBribeUndoException()
-            : GameException("Target has not done a bribe or has already undone it.") {}
+        InvalidBribeUndoException() : GameException(GameExceptionStrings::InvalidBribeUndo) {}
     };
 
     class CannotTargetYourselfException : public GameException
     {
     public:
-        CannotTargetYourselfException()
-            : GameException("You cannot target yourself.") {}
+        CannotTargetYourselfException() : GameException(GameExceptionStrings::CannotTargetYourself) {}
     };
 
     class ArrestBlockedException : public GameException
     {
     public:
-        ArrestBlockedException()
-            : GameException("You are blocked from using ARREST this turn.") {}
+        ArrestBlockedException() : GameException(GameExceptionStrings::ArrestBlocked) {}
     };
 
 }
 
-#endif

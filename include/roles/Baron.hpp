@@ -1,5 +1,5 @@
-#ifndef BARON_HPP
-#define BARON_HPP
+// Author: noapatito123@gmail.com
+#pragma once
 
 #include "Player.hpp"
 
@@ -16,4 +16,4 @@ namespace coup
 
 }
 
-#endif
+

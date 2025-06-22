@@ -1,5 +1,5 @@
-#ifndef JUDGE_HPP
-#define JUDGE_HPP
+// Author: noapatito123@gmail.com
+#pragma once
 
 #include "Player.hpp"
 
@@ -24,4 +24,3 @@ namespace coup
 
 }
 
-#endif
