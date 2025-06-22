@@ -7,6 +7,7 @@ namespace coup
 {
 
     Baron::Baron(Game &game, const std::string &name) : Player(game, name) {}
+    Baron::~Baron() = default;
 
     void Baron::invest()
     {

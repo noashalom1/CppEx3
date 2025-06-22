@@ -8,6 +8,7 @@ namespace coup
 {
 
     Spy::Spy(Game &game, const std::string &name) : Player(game, name) {}
+    Spy::~Spy() = default;
 
     std::string Spy::role() const
     {

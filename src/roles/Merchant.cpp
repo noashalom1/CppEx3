@@ -6,6 +6,7 @@
 namespace coup {
 
     Merchant::Merchant(Game& game, const std::string& name) : Player(game, name) {}
+    Merchant::~Merchant() = default;
 
      void Merchant::start_new_turn() {
         Player::start_new_turn();  

@@ -29,7 +29,7 @@ namespace coup
 
     public:
         Game();
-        ~Game();
+        virtual ~Game();
 
         // מוסיף שחקן למשחק (כל עוד יש מקום)
         void add_player(Player *player);

@@ -7,7 +7,17 @@ namespace coup
 {
 
     Player::Player(Game &game, const std::string &name)
-        : game(game), name(name), coins(0)
+        : eliminated(false),
+          disable_to_arrest(false),
+          game(game),
+          name(name),
+          coins(0),
+          mustPerformCoup(false),
+          sanctioned(false),
+          extra_turns(0),
+          sanctioned_by(""),
+          disable_arrest_turns(0),
+          used_bribe(false)
     {
     }
 
@@ -17,8 +27,6 @@ namespace coup
     {
         return name;
     }
-
-    
 
     void Player::check_turn() const
     {

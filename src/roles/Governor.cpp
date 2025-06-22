@@ -8,6 +8,7 @@ namespace coup
 {
 
     Governor::Governor(Game &game, const std::string &name) : Player(game, name) {}
+    Governor::~Governor() = default;
 
     void Governor::tax()
     {

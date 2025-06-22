@@ -1,10 +1,11 @@
-//Author: noapatito123@gmail.com
+// Author: noapatito123@gmail.com
 #pragma once
 
 #include <string>
 #include <set>
 #include <map>
 #include "Game.hpp"
+
 
 namespace coup
 {
@@ -14,29 +15,29 @@ namespace coup
     class Player
     {
     private:
-        bool eliminated = false;
-        bool disable_to_arrest = false;
-        
+        bool eliminated;
+        bool disable_to_arrest;
+
     protected:
         Game &game;
         std::string name;
         int coins;
-        
-        bool mustPerformCoup = false;
-        
-        bool sanctioned = false;
-        int extra_turns = 0;
+
+        bool mustPerformCoup;
+
+        bool sanctioned;
+        int extra_turns;
         std::string sanctioned_by;
-       
-        int disable_arrest_turns = 0;
-        bool used_bribe = false;
+
+        int disable_arrest_turns;
+        bool used_bribe;
 
     public:
         Player(Game &game, const std::string &name);
         virtual ~Player();
 
         const std::string &get_name() const;
-        
+
         virtual std::string role() const = 0;
         void check_turn() const;
         void revive();
@@ -47,7 +48,7 @@ namespace coup
         virtual void arrest(Player &target);
         virtual void sanction(Player &target);
         virtual void coup(Player &target);
-     
+
         int get_coins() const { return coins; }
         void decrease_coins(int amount);
         void increase_coins(int amount);
@@ -74,21 +75,14 @@ namespace coup
         bool is_extra_turn() const { return extra_turns > 0; }
         void set_extra_turns(int value) { extra_turns = value; }
         int get_extra_turns() const { return extra_turns; }
-        
+
         const std::string &name_ref() const { return name; }
 
         virtual void start_new_turn()
         {
-            if (coins >= 10)
-            {
-                mustPerformCoup = true;
-            }
-            else
-            {
-                mustPerformCoup = false;
-            }
+            mustPerformCoup = (coins >= 10); // Automatically enforce COUP requirement if player has 10 or more coins
 
-            // רק אם השחקן הזה הוא זה שביצע את הסנקציה – ננקה את הסנקציה מהשחקנים שסומנו על ידו
+             // Clear SANCTIONED status from players sanctioned by this player
             for (Player *p : game.get_players())
             {
                 if (p->is_sanctioned() && p->sanctioned_by == name)
@@ -96,10 +90,8 @@ namespace coup
                     p->clear_sanctioned();
                 }
             }
-            reset_used_bribe();
+            reset_used_bribe(); // Reset used bribe flag at the beginning of the turn
         }
     };
 
 }
-
-

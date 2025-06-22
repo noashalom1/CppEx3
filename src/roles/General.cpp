@@ -8,6 +8,7 @@ namespace coup
 {
 
     General::General(Game &game, const std::string &name) : Player(game, name) {}
+    General::~General() = default;
 
     std::string General::undo_coup(Player &target)
     {

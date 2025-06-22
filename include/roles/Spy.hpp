@@ -5,11 +5,12 @@
 
 namespace coup {
 
-    class Spy : public Player {
+    class Spy final : public Player {
     private:
         bool used_peek_and_disable = false;
     public:
         Spy(Game& game, const std::string& name);
+        ~Spy() override;
 
         std::string peek_and_disable(Player& target);
 

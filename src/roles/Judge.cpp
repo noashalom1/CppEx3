@@ -8,6 +8,7 @@ namespace coup
 {
 
     Judge::Judge(Game &game, const std::string &name) : Player(game, name) {}
+    Judge::~Judge() = default;
 
     std::string Judge::undo_bribe(Player &target)
     {
