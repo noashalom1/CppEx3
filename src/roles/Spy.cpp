@@ -31,24 +31,24 @@ namespace coup
      * @throws CannotTargetYourselfException if the target is the Spy themself.
      * @throws ActionAlreadyUsedThisRoundException if Spy already used this action this round.
      */
-    std::string Spy::peek_and_disable(Player &target)
+    std::string Spy::peek_and_disable(std::shared_ptr<Player>& target)
     {
-        if (target.is_eliminated())
+        if (target->is_eliminated())
             throw TargetIsEliminatedException();
 
-        if (target.get_name() == name)
+        if (target->get_name() == name)
             throw CannotTargetYourselfException();
 
         if (!can_peek_and_disable())
             throw ActionAlreadyUsedThisRoundException(name, "peek and disable");
 
-        target.set_disable_to_arrest(true); // Prevent arrest
-        target.set_disable_arrest_turns(1); // Only for 1 turn
+        target->set_disable_to_arrest(true); // Prevent arrest
+        target->set_disable_arrest_turns(1); // Only for 1 turn
 
         mark_peek_and_disable_used(); // Mark action used for this round
 
-        std::string result = this->get_name() + " peeked and disabled " + target.get_name() +
-                             " (Coins: " + std::to_string(target.get_coins()) + ")";
+        std::string result = this->get_name() + " peeked and disabled " + target->get_name() +
+                             " (Coins: " + std::to_string(target->get_coins()) + ")";
 
         return result;
     }

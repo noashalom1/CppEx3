@@ -32,7 +32,7 @@ namespace coup
      * @throws NotEnoughCoinsException If General has fewer than 5 coins.
      * @throws TargetNotEliminatedException If the target is not eliminated.
      */
-    std::string General::undo_coup(Player &target)
+    std::string General::undo_coup(std::shared_ptr<Player>& target)
     {
         if (!can_undo_coup())
         {
@@ -44,26 +44,26 @@ namespace coup
             throw NotEnoughCoinsException(5, coins);
         }
 
-        if (!target.is_eliminated())
+        if (!target->is_eliminated())
         {
             throw TargetNotEliminatedException();
         }
 
         coins -= 5; // Pay 5 coins
-        target.revive(); // Revive the eliminated player
+        target->revive(); // Revive the eliminated player
 
         // Remove the coup record targeting the revived player
         game.get_coup_list().erase(
             std::remove_if(game.get_coup_list().begin(), game.get_coup_list().end(),
                            [&target](const std::pair<std::string, std::string> &entry)
                            {
-                               return entry.second == target.get_name(); // Match by target name
+                               return entry.second == target->get_name(); // Match by target name
                            }),
             game.get_coup_list().end());
 
         mark_undo_coup_used(); // Mark ability as used this round
 
-        return name + " undid coup on " + target.get_name();
+        return name + " undid coup on " + target->get_name();
     }
 
      /**

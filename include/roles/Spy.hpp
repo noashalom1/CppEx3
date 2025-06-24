@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Player.hpp"
+#include <memory>
 
 namespace coup {
 
@@ -12,7 +13,7 @@ namespace coup {
         Spy(Game& game, const std::string& name);
         ~Spy() override;
 
-        std::string peek_and_disable(Player& target);
+        std::string peek_and_disable(std::shared_ptr<Player>& target);
 
         bool can_peek_and_disable() const { return !used_peek_and_disable; }
         void mark_peek_and_disable_used() { used_peek_and_disable = true; }

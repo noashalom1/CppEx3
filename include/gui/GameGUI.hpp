@@ -8,6 +8,7 @@
 #include "Button.hpp"
 #include "TextBox.hpp"
 #include "Game.hpp"
+#include <memory>
 
 namespace coup {
 
@@ -26,7 +27,7 @@ public:
     int addRoleActionButtons(const std::string &role,
                              const std::string &buttonPrefix,
                              float startY,
-                             std::function<void(Player *)> actionPerPlayer);
+                             std::function<void(std::shared_ptr<Player>&)> actionPerPlayer);
     std::string inGameError;
 
 private:
@@ -34,7 +35,7 @@ private:
     sf::Font font;
     std::vector<Button> buttons;
     std::vector<Button> targetButtons;
-    std::function<void(Player*)> targetAction;
+    std::function<void(std::shared_ptr<Player>&)> targetAction;
 
     TextBox* nameBox;
     Button* addPlayerBtn;
@@ -51,7 +52,7 @@ private:
     Game game;
     GUIState state = GUIState::Setup;
 
-    void showTargetSelection(std::function<void(Player*)> action, bool includeCurrentPlayer = false, const std::vector<Player*>& targets = {});
+    void showTargetSelection(std::function<void(std::shared_ptr<Player>&)> action, std::vector<std::shared_ptr<Player>>& targets, bool includeCurrentPlayer = false);
     std::string randomRole();
 };
 

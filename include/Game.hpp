@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <memory>
 
 namespace coup
 {
@@ -13,7 +14,7 @@ namespace coup
     class Game
     {
     private:
-        std::vector<Player *> players_list; // List of all players
+        std::vector<std::shared_ptr<Player>> players_list; // List of all players
         size_t turn_index; // Index of current turn
         size_t global_turn_index; // Total turn counter
 
@@ -31,9 +32,9 @@ namespace coup
 
         virtual ~Game(); // Destructor
 
-        const std::vector<Player *> &get_players() const; // Get all players
-        Player *get_player(const std::string &name); // Get player by name
-        Player *get_current_player(); // Get current turn player
+        std::vector<std::shared_ptr<Player>> &get_players(); // Get all players
+        std::shared_ptr<Player>& get_player(const std::string &name); // Get player by name
+        std::shared_ptr<Player>& get_current_player(); // Get current turn player
 
         int get_active_players_count() const; // Count active (non-eliminated) players
         int get_current_round() const { return current_round; } // Get current round number
@@ -47,8 +48,8 @@ namespace coup
         const std::string &get_last_arrested_name() const; // Get last arrested name
         void set_last_arrested_name(const std::string &name); // Set last arrested name
 
-        void add_player(Player *player); // Add a new player to the game
-        void remove_player(Player *player); // Eliminate a player from the game
+        void add_player(std::shared_ptr<Player> player); // Add a new player to the game
+        void remove_player(std::shared_ptr<Player>& player); // Eliminate a player from the game
 
         std::string turn() const; // Get the name of the player whose turn it is
 

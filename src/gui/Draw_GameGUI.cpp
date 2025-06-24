@@ -13,7 +13,7 @@
 #include <algorithm>
 #include <ctime>
 #include <SFML/Graphics.hpp>
-
+#include <memory>
 using namespace coup;
 using namespace sf;
 
@@ -30,30 +30,30 @@ using namespace sf;
 void GameGUI::drawPlayerList()
 {
     float startY = 500; // Starting Y-coordinate for the first player's label
-    for (const Player *p : game.get_players()) // Iterate over all players in the game
+    for (const std::shared_ptr<Player>& player : game.get_players()) // Iterate over all players in the game
     {
         sf::Text info;
         info.setFont(font);  // Use the main game font
         info.setCharacterSize(16); // Set readable text size
         // Construct the label with player name and role
-        std::string label = p->get_name() + " - " + p->role();
-        if (p->is_eliminated()) // Gray color for eliminated players
+        std::string label = player->get_name() + " - " + player->role();
+        if (player->is_eliminated()) // Gray color for eliminated players
         {
             info.setFillColor(sf::Color(150, 150, 150));
         }
 
-        else if (p->is_sanctioned() && p->get_name() == game.get_last_arrested_name())
+        else if (player->is_sanctioned() && player->get_name() == game.get_last_arrested_name())
         {
             // Yellow color for players who are both sanctioned and last arrested
             info.setFillColor(sf::Color(255, 255, 0));
             label += " [BOTH]";
         }
-        else if (p->is_sanctioned()) // Dark red for sanctioned players
+        else if (player->is_sanctioned()) // Dark red for sanctioned players
         {
             info.setFillColor(sf::Color(128, 0, 0));
             label += " [SANCTIONED]";
         }
-        else if (p->get_name() == game.get_last_arrested_name()) // Red for last arrested
+        else if (player->get_name() == game.get_last_arrested_name()) // Red for last arrested
         {
             info.setFillColor(sf::Color(255, 0, 0));
             label += " [DISABLE TO ARREST]";

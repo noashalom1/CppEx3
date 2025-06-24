@@ -2,6 +2,7 @@
 #include "Player.hpp"
 #include "exceptions.hpp"
 #include "Game.hpp"
+#include <memory>
 
 namespace coup
 {
@@ -85,39 +86,39 @@ namespace coup
      * @brief Arrests the target player and adjusts coins based on role.
      * @throws Multiple exceptions for invalid arrest conditions.
      */
-    void Player::arrest(Player &target)
+    void Player::arrest(std::shared_ptr<Player>& target)
     {
         check_turn();
         if (must_coup())
             throw MustPerformCoupException();
         if (is_disable_to_arrest())
             throw ArrestBlockedException();
-        if (target.get_name() == game.get_last_arrested_name())
+        if (target->get_name() == game.get_last_arrested_name())
             throw DuplicateArrestException();
-        if (target.is_eliminated())
+        if (target->is_eliminated())
             throw TargetIsEliminatedException();
-        if (target.get_name() == name)
+        if (target->get_name() == name)
             throw CannotTargetYourselfException();
-        if (target.role() == "General")
+        if (target->role() == "General")
         {
-            if (target.get_coins() <= 0)
+            if (target->get_coins() <= 0)
                 throw TargetNoCoinsException();
             coins++; // Steal 1 coin from General
         }
-        else if (target.role() == "Merchant")
+        else if (target->role() == "Merchant")
         {
-            if (target.get_coins() <= 1)
+            if (target->get_coins() <= 1)
                 throw TargetNoCoinsException();
-            target.coins -= 2; // Merchant loses 2 coins
+            target->coins -= 2; // Merchant loses 2 coins
         }
         else
         {
-            if (target.get_coins() <= 0)
+            if (target->get_coins() <= 0)
                 throw TargetNoCoinsException();
-            target.coins--; // Target loses 1 coin
+            target->coins--; // Target loses 1 coin
             coins++; // Attacker gains 1 coin
         }
-        game.set_last_arrested_name(target.get_name()); // Save last arrested
+        game.set_last_arrested_name(target->get_name()); // Save last arrested
         game.next_turn();
     }
 
@@ -125,23 +126,23 @@ namespace coup
      * @brief Sanctions another player, optionally rewarding Barons.
      * @throws Multiple exceptions for invalid target or insufficient coins.
      */
-    void Player::sanction(Player &target)
+    void Player::sanction(std::shared_ptr<Player>& target)
     {
         check_turn();
         if (must_coup())
             throw MustPerformCoupException();
-        if (target.is_eliminated())
+        if (target->is_eliminated())
             throw TargetIsEliminatedException();
-        if (target.get_name() == name)
+        if (target->get_name() == name)
             throw CannotTargetYourselfException();
-        if (target.is_sanctioned() == true)
+        if (target->is_sanctioned() == true)
             throw AlreadySanctionedException();
-        if (target.role() == "Baron")
-            target.increase_coins(1); // Baron gets 1 coin back
-        if ((target.role() == "Judge" && coins < 4) || coins < 3)
-            throw NotEnoughCoinsException(target.role() == "Judge" ? 4 : 3, coins);
-        target.role() == "Judge" ? coins -= 4 : coins -= 3; // Judge costs 4, others cost 3
-        target.mark_sanctioned(name); // Apply sanction
+        if (target->role() == "Baron")
+            target->increase_coins(1); // Baron gets 1 coin back
+        if ((target->role() == "Judge" && coins < 4) || coins < 3)
+            throw NotEnoughCoinsException(target->role() == "Judge" ? 4 : 3, coins);
+        target->role() == "Judge" ? coins -= 4 : coins -= 3; // Judge costs 4, others cost 3
+        target->mark_sanctioned(name); // Apply sanction
         game.next_turn();
     }
 
@@ -149,17 +150,17 @@ namespace coup
      * @brief Performs a coup on another player, eliminating them.
      * @throws Multiple exceptions for invalid target or insufficient coins.
      */
-    void Player::coup(Player &target)
+    void Player::coup(std::shared_ptr<Player>& target)
     {
         check_turn();
         if (coins < 7)
             throw NotEnoughCoinsException(7, coins);
-        if (target.is_eliminated())
+        if (target->is_eliminated())
             throw TargetIsAlreadyEliminatedException();
-        if (target.get_name() == name)
+        if (target->get_name() == name)
             throw CannotTargetYourselfException();
-        game.remove_player(&target); // Eliminate player
-        game.add_to_coup(name, target.get_name()); // Log coup
+        game.remove_player(target); // Eliminate player
+        game.add_to_coup(name, target->get_name()); // Log coup
         coins -= 7; // Pay for coup
         game.next_turn();
     }

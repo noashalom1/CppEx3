@@ -1,6 +1,6 @@
 // Author: noapatito123@gmail.com
 #include "TextBox.hpp"
-
+#include <memory>
 TextBox::TextBox(const sf::Font& font, sf::Vector2f size, sf::Vector2f position) {
     box.setSize(size);
     box.setPosition(position);

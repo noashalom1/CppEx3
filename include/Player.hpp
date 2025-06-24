@@ -5,6 +5,7 @@
 #include <set>
 #include <map>
 #include "Game.hpp"
+#include <memory>
 
 namespace coup
 {
@@ -36,9 +37,9 @@ namespace coup
         virtual void gather(); // Gain 1 coin
         virtual void tax();  // Gain 2 coins 
         virtual void bribe(); // Bribe for extra turn
-        virtual void arrest(Player &target); // Arrest another player
-        virtual void sanction(Player &target); // Sanction another player
-        virtual void coup(Player &target); // Eliminate another player
+        virtual void arrest(std::shared_ptr<Player>& target); // Arrest another player
+        virtual void sanction(std::shared_ptr<Player>&target); // Sanction another player
+        virtual void coup(std::shared_ptr<Player>& target); // Eliminate another player
 
         const std::string &get_name() const { return name; } // Get player name
         void check_turn() const; // Check if it's this player's turn
@@ -75,11 +76,11 @@ namespace coup
             mustPerformCoup = (coins >= 10); // Automatically enforce COUP if player has 10+ coins
 
             // Clear sanctions the player applied to others
-            for (Player *p : game.get_players())
+            for (const std::shared_ptr<Player>& player : game.get_players())
             {
-                if (p->is_sanctioned() && p->sanctioned_by == name)
+                if (player->is_sanctioned() && player->sanctioned_by == name)
                 {
-                    p->clear_sanctioned();
+                    player->clear_sanctioned();
                 }
             }
             reset_used_bribe(); // Reset bribe status for new turn

@@ -98,7 +98,7 @@ namespace coup
                 {
                     throw CannotUndoOwnActionException(name, "tax");
                 }
-                Player *target = game.get_player(actor);
+                std::shared_ptr<Player>& target = game.get_player(actor);
                 if (target->is_eliminated())
                 {
                     throw TargetIsEliminatedException();

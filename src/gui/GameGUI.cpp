@@ -71,12 +71,12 @@ GameGUI::GameGUI() : window(VideoMode(1000, 700), "Coup Interactive GUI")
         }
         for (size_t i = 0; i < tempNames.size(); ++i) {
             const std::string& role = tempRoles[i];
-            if (role == "Governor") game.add_player(new Governor(game, tempNames[i]));
-            else if (role == "Spy") game.add_player(new Spy(game, tempNames[i]));
-            else if (role == "Baron") game.add_player(new Baron(game, tempNames[i]));
-            else if (role == "General") game.add_player(new General(game, tempNames[i]));
-            else if (role == "Judge") game.add_player(new Judge(game, tempNames[i]));
-            else if (role == "Merchant") game.add_player(new Merchant(game, tempNames[i]));
+            if (role == "Governor") game.add_player(std::make_shared<Governor>(game, tempNames[i]));
+            else if (role == "Spy") game.add_player(std::make_shared<Spy>(game, tempNames[i]));
+            else if (role == "Baron") game.add_player(std::make_shared<Baron>(game, tempNames[i]));
+            else if (role == "General") game.add_player(std::make_shared<General>(game, tempNames[i]));
+            else if (role == "Judge") game.add_player(std::make_shared<Judge>(game, tempNames[i]));
+            else if (role == "Merchant") game.add_player(std::make_shared<Merchant>(game, tempNames[i]));
         }
 
         setupButtons();
@@ -241,7 +241,7 @@ void GameGUI::run()
         }
         else
         {
-            Player *current = game.get_current_player();
+            std::shared_ptr<Player>& current = game.get_current_player();
             std::string info = "Turn: " + current->get_name() + " (" + current->role() + "), Coins: " + std::to_string(current->get_coins());
 
             sf::Text header;
