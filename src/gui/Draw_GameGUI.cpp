@@ -30,7 +30,7 @@ using namespace sf;
 void GameGUI::drawPlayerList()
 {
     float startY = 500; // Starting Y-coordinate for the first player's label
-    for (const std::shared_ptr<Player>& player : game.get_players()) // Iterate over all players in the game
+    for (const std::shared_ptr<Player>& player : game.get_all_players()) // Iterate over all players in the game
     {
         sf::Text info;
         info.setFont(font);  // Use the main game font

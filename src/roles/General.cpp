@@ -3,6 +3,7 @@
 #include "Game.hpp"
 #include "exceptions.hpp"
 #include <algorithm>
+#include <iostream>
 
 namespace coup
 {
@@ -32,8 +33,9 @@ namespace coup
      * @throws NotEnoughCoinsException If General has fewer than 5 coins.
      * @throws TargetNotEliminatedException If the target is not eliminated.
      */
-    std::string General::undo_coup(std::shared_ptr<Player>& target)
+    std::string General::undo_coup(const std::shared_ptr<Player>& target)
     {
+        
         if (!can_undo_coup())
         {
             throw ActionAlreadyUsedThisRoundException(name, "UNDO COUP");
@@ -62,7 +64,7 @@ namespace coup
             game.get_coup_list().end());
 
         mark_undo_coup_used(); // Mark ability as used this round
-
+        std::cout << name << " preformed undo-coup on " << target->get_name() << "! \n" << std::endl;                   
         return name + " undid coup on " + target->get_name();
     }
 

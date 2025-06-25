@@ -19,7 +19,7 @@ namespace coup
         void mark_undo_bribe_used() { used_undo_this_round = true; }
         void reset_undo_bribe_flag() { used_undo_this_round = false; }
 
-        std::string undo_bribe(Player &target);
+        std::string undo_bribe(const std::shared_ptr<Player>& target);
         std::string role() const override;
     };
 

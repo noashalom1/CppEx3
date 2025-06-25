@@ -2,6 +2,7 @@
 #include "Baron.hpp"
 #include "Game.hpp"
 #include "exceptions.hpp"
+#include <iostream>
 
 namespace coup
 {
@@ -31,6 +32,7 @@ namespace coup
         if (coins < 3)
             throw NotEnoughCoinsException(3, coins);
         coins += 3; // Gain 3 coins
+        std::cout << name << " preformed invest! \n" << std::endl;
         game.next_turn(); // Advance to next player's turn
     }
 

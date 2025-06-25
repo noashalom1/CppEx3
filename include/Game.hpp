@@ -32,13 +32,14 @@ namespace coup
 
         virtual ~Game(); // Destructor
 
-        std::vector<std::shared_ptr<Player>> &get_players(); // Get all players
+        const std::vector<std::shared_ptr<Player>>& get_all_players() const; // Get all players
+        
         std::shared_ptr<Player>& get_player(const std::string &name); // Get player by name
         std::shared_ptr<Player>& get_current_player(); // Get current turn player
-
         int get_active_players_count() const; // Count active (non-eliminated) players
         int get_current_round() const { return current_round; } // Get current round number
 
+        size_t get_turn_index() const { return turn_index; }
         size_t get_global_turn_index() const { return global_turn_index; } // Get global turn index
 
         std::vector<std::tuple<std::string, std::string, int>> &get_action_history() { return action_history; } // Get action history
@@ -48,8 +49,8 @@ namespace coup
         const std::string &get_last_arrested_name() const; // Get last arrested name
         void set_last_arrested_name(const std::string &name); // Set last arrested name
 
-        void add_player(std::shared_ptr<Player> player); // Add a new player to the game
-        void remove_player(std::shared_ptr<Player>& player); // Eliminate a player from the game
+        void add_player(const std::shared_ptr<Player> &player); // Add a new player to the game
+        void remove_player(const std::string &target); // Eliminate a player from the game
 
         std::string turn() const; // Get the name of the player whose turn it is
 

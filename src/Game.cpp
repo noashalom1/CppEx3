@@ -22,14 +22,14 @@ namespace coup
 
     /**
      * @brief Destructor for the Game class.
-     */   
+     */
     Game::~Game() {}
 
-     /**
+    /**
      * @brief Returns a constant reference to the list of players.
      * @return const std::vector<std::shared_ptr<Player>>& List of players.
      */
-    std::vector<std::shared_ptr<Player>> &Game::get_players()
+    const std::vector<std::shared_ptr<Player>> &Game::get_all_players() const
     {
         return players_list;
     }
@@ -40,9 +40,9 @@ namespace coup
      * @return std::shared_ptr<Player> Pointer to the found player.
      * @throws PlayerNotFoundException if the player does not exist.
      */
-    std::shared_ptr<Player>& Game::get_player(const string &name)
+    std::shared_ptr<Player> &Game::get_player(const string &name)
     {
-        for (std::shared_ptr<Player>& player : players_list)
+        for (std::shared_ptr<Player> &player : players_list)
         {
             if (player->get_name() == name)
                 return player;
@@ -55,7 +55,7 @@ namespace coup
      * @return std::shared_ptr<Player> Pointer to the current player.
      * @throws NoPlayersLeftException if no players are in the game.
      */
-    std::shared_ptr<Player>& Game::get_current_player()
+    std::shared_ptr<Player> &Game::get_current_player()
     {
         if (players_list.empty())
             throw NoPlayersLeftException();
@@ -112,7 +112,7 @@ namespace coup
      * @throws MaxPlayersExceededException if more than 6 players.
      * @throws DuplicatePlayerNameException if name is already used.
      */
-    void Game::add_player(std::shared_ptr<Player> player)
+    void Game::add_player(const std::shared_ptr<Player> &player)
     {
         if (players_list.size() >= 6)
         {
@@ -132,9 +132,17 @@ namespace coup
      * @brief Eliminates a player from the game.
      * @param player Pointer to the player to eliminate.
      */
-    void Game::remove_player(std::shared_ptr<Player>& player)
+    void Game::remove_player(const std::string &target)
     {
-        player->mark_eliminated();
+        for (auto &p : players_list)
+        {
+            if (p->get_name() == target)
+            {
+                p->mark_eliminated();
+                return;
+            }
+        }
+        throw PlayerNotFoundException(target);
         if (turn_index >= players_list.size())
             turn_index = 0;
     }
@@ -151,7 +159,7 @@ namespace coup
         return players_list[turn_index % players_list.size()]->get_name();
     }
 
-     /**
+    /**
      * @brief Adds an entry to the coup list (attacker, target).
      * @param attacker Name of the attacking player.
      * @param target Name of the target player.
@@ -161,7 +169,7 @@ namespace coup
         coup_list.emplace_back(attacker, target);
     }
 
-     /**
+    /**
      * @brief Determines the winner of the game.
      * @return string Name of the winning player.
      * @throws GameNotStartedException if no players left.
@@ -171,7 +179,7 @@ namespace coup
     {
         int alive_count = 0;
         string winner_name;
-        for (const std::shared_ptr<coup::Player>& p : players_list)
+        for (const std::shared_ptr<coup::Player> &p : players_list)
         {
             if (!p->is_eliminated())
             {
@@ -207,34 +215,45 @@ namespace coup
             return; // player gets another turn
         }
 
-        std::shared_ptr<Player>& prev_player = get_current_player();
-
         // advance to next living player
         do
         {
             turn_index = (turn_index + 1) % players_list.size();
-        } while (players_list[turn_index]->is_eliminated());
+        } while (players_list[turn_index]->is_eliminated()); // skip non-active player
 
         global_turn_index++;
 
-        // new round: reset flags for role-based undo abilities
-        if (global_turn_index % get_active_players_count() == 0)
+        // Find the smallest index of a living player
+        size_t min_alive_index = -1;
+        for (size_t i = 0; i < players_list.size(); ++i)
         {
-            current_round++;
-            for (std::shared_ptr<Player>& p : players_list)
+            if (!players_list[i]->is_eliminated())
             {
-                if (p->role() == "Judge")
-                    static_cast<Judge *>(p.get())->reset_undo_bribe_flag();
-                if (p->role() == "Governor")
-                    static_cast<Governor *>(p.get())->reset_undo_tax_flag();
-                if (p->role() == "General")
-                    static_cast<General *>(p.get())->reset_undo_coup_flag();
-                if (p->role() == "Spy")
-                    static_cast<Spy *>(p.get())->reset_peek_and_disable_flag();
+                min_alive_index = i;
+                break;
             }
         }
 
-        std::shared_ptr<Player>& current = players_list[turn_index];
+        // If current player is the first living one in order → new round: reset flags for role-based undo abilities
+        if (turn_index == min_alive_index)
+            {
+                current_round++;
+                for (std::shared_ptr<Player> &p : players_list)
+                {
+                    if (p->role() == "Judge")
+                        static_cast<Judge *>(p.get())->reset_undo_bribe_flag();
+                    if (p->role() == "Governor")
+                        static_cast<Governor *>(p.get())->reset_undo_tax_flag();
+                    if (p->role() == "General")
+                        static_cast<General *>(p.get())->reset_undo_coup_flag();
+                    if (p->role() == "Spy")
+                        static_cast<Spy *>(p.get())->reset_peek_and_disable_flag();
+                }
+            }
+
+        std::shared_ptr<Player> &current = players_list[turn_index];
+
+        std::shared_ptr<Player> &prev_player = get_current_player();
 
         // remove coup records related to current turn player
         coup_list.erase(std::remove_if(coup_list.begin(), coup_list.end(),
@@ -257,4 +276,5 @@ namespace coup
             }
         }
     }
+
 }

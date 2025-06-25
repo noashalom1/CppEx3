@@ -14,7 +14,6 @@ namespace coup {
 
         void tax();
         std::string undo_tax();
-        void can_undo_tax() const;
         void mark_undo_tax_used() { used_undo_this_round = true; }
         void reset_undo_tax_flag() { used_undo_this_round = false; }
         
