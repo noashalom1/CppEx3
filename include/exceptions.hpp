@@ -35,6 +35,7 @@ namespace coup
         extern const std::string CannotTargetYourself;
         extern const std::string ArrestBlocked;
 
+
         // Dynamic messages
         std::string NotEnoughCoins(int required, int curr);
         std::string PlayerNotFound(const std::string &name);
@@ -44,6 +45,7 @@ namespace coup
         std::string ActionTooOld(const std::string &actor, const std::string &action);
         std::string CannotUndoOwnAction(const std::string &name, const std::string &action);
         std::string NoRecentActionToUndo(const std::string &action);
+        std::string NoCoupToUndo(const std::string &target);
     }
 
     // === Specific Exceptions ===
@@ -186,6 +188,13 @@ namespace coup
     public:
         NoRecentActionToUndoException(const std::string &action)
             : GameException(GameExceptionStrings::NoRecentActionToUndo(action)) {}
+    };
+
+    class NoCoupToUndoException : public GameException
+    {
+    public:
+        NoCoupToUndoException(const std::string &target)
+            : GameException(GameExceptionStrings::NoCoupToUndo(target)) {}
     };
 
     class InvalidBribeUndoException : public GameException

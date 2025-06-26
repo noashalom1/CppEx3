@@ -228,47 +228,188 @@ TEST_CASE("Player::sanction functionality")
     CHECK(jud->is_sanctioned() == true);
 }
 
-TEST_CASE("Player::arrest edge cases")
+TEST_CASE("Player::sanction edge cases")
 {
+    Game game;
+    auto p1 = std::make_shared<Spy>(game, "P1");
+    auto p2 = std::make_shared<Merchant>(game, "P2");
+    auto p3 = std::make_shared<General>(game, "P3");
+    auto judge = std::make_shared<Judge>(game, "Judge");
+
+    game.add_player(p1);
+    game.add_player(p2);
+    game.add_player(p3);
+    game.add_player(judge);
+
+    // 1. Not your turn
+    force_turn1(game, "P2");
+    p1->increase_coins(3);
+    CHECK_THROWS_AS(p1->sanction(p2), NotYourTurnException);
+
+    // 2. Must perform coup
+    force_turn1(game, "P1");
+    p1->set_must_coup(true);
+    CHECK_THROWS_AS(p1->sanction(p2), MustPerformCoupException);
+    p1->set_must_coup(false);
+
+    // 3. Target is eliminated
+    p2->mark_eliminated();
+    force_turn1(game, "P1");
+    CHECK_THROWS_AS(p1->sanction(p2), TargetIsEliminatedException);
+    p2->revive();
+
+    // 4. Cannot sanction yourself
+    force_turn1(game, "P1");
+    CHECK_THROWS_AS(p1->sanction(p1), CannotTargetYourselfException);
+
+    // 5. Already sanctioned
+    force_turn1(game, "P1");
+    p1->increase_coins(3);
+    p1->sanction(p3); // First sanction
+    CHECK(p3->is_sanctioned());
+
+    // Try again before full round
+    force_turn1(game, "P2");
+    p2->increase_coins(3);
+    CHECK_THROWS_AS(p2->sanction(p3), AlreadySanctionedException);
+
+    // 6. Not enough coins to sanction regular player
+    force_turn1(game, "P1");
+    p1->decrease_coins(p1->get_coins()); // Set coins to 0
+    CHECK_THROWS_AS(p1->sanction(p3), NotEnoughCoinsException);
+
+    // 7. Not enough coins to sanction Judge (costs 4)
+    p1->increase_coins(3); // Only 3, not enough for Judge
+    CHECK_THROWS_AS(p1->sanction(judge), NotEnoughCoinsException);
+}
+
+TEST_CASE("Player::coup functionality") {
     Game game;
     auto spy = std::make_shared<Spy>(game, "Spy");
     auto bar = std::make_shared<Baron>(game, "Baron");
-    auto jud = std::make_shared<Judge>(game, "Judge");
+    auto extra = std::make_shared<General>(game, "General"); // Third player
 
     game.add_player(spy);
     game.add_player(bar);
-    game.add_player(jud);
+    game.add_player(extra);
 
-    force_turn1(game, "Baron");
-    CHECK_THROWS_AS(spy->sanction(bar), NotYourTurnException);
-
-    force_turn1(game, "Spy");
-    spy->set_must_coup(true);
-    CHECK_THROWS_AS(spy->sanction(bar), MustPerformCoupException);
-    spy->set_must_coup(false);
-
-    bar->mark_eliminated();
-    force_turn1(game, "Spy");
-    CHECK_THROWS_AS(spy->sanction(bar), TargetIsEliminatedException);
-    bar->revive();
+    spy->increase_coins(7);
 
     force_turn1(game, "Spy");
-    CHECK_THROWS_AS(spy->sanction(spy), CannotTargetYourselfException);
+    spy->coup(bar);
 
-    bar->mark_sanctioned("Spy");
+    CHECK(spy->get_coins() == 0);
+    CHECK(bar->is_eliminated() == true);
 
-    game.set_last_arrested_name("General");
-    force_turn1(game, "Spy");
-    CHECK_THROWS_AS(spy->arrest(gen), DuplicateArrestException);
+    // Check coup list BEFORE turn returns to Spy (before round ends)
+    CHECK(game.is_in_coup_list(bar->get_name()) == true); 
 
-    force_turn1(game, "Spy");
-    CHECK_THROWS_AS(spy->arrest(mer), TargetNoCoinsException);
+    force_turn1(game, "Spy");     // Back to Spy (new round begins)
 
-    game.set_last_arrested_name("Spy");
-    force_turn1(game, "Spy");
-    CHECK_THROWS_AS(spy->arrest(gen), TargetNoCoinsException);
+    // coup_list should be cleared after full round
+    CHECK_FALSE(game.is_in_coup_list(bar->get_name())); // coup_list is expected to be empty
+}
 
-    game.set_last_arrested_name("General");
-    force_turn1(game, "General");
-    CHECK_THROWS_AS(gen->arrest(spy), TargetNoCoinsException);
+TEST_CASE("Player::coup edge cases") {
+    Game game;
+    auto p1 = std::make_shared<Spy>(game, "P1");
+    auto p2 = std::make_shared<Baron>(game, "P2");
+    auto p3 = std::make_shared<Merchant>(game, "P3");
+
+    game.add_player(p1);
+    game.add_player(p2);
+    game.add_player(p3);
+
+    // 1. Not your turn
+    force_turn1(game, "P2");
+    p1->increase_coins(7);
+    CHECK_THROWS_AS(p1->coup(p2), NotYourTurnException);
+
+    // 2. Not enough coins
+    force_turn1(game, "P1");
+    p1->decrease_coins(7); // Now has 0 coins
+    CHECK_THROWS_AS(p1->coup(p2), NotEnoughCoinsException);
+
+    // 3. Target already eliminated
+    p1->increase_coins(7); // Recharge
+    p2->mark_eliminated();
+    CHECK_THROWS_AS(p1->coup(p2), TargetIsAlreadyEliminatedException);
+    p2->revive();
+
+    // 4. Cannot target yourself
+    CHECK_THROWS_AS(p1->coup(p1), CannotTargetYourselfException);
+}
+
+TEST_CASE("Player::check_turn") {
+    Game game;
+    auto p1 = std::make_shared<Spy>(game, "P1");
+    auto p2 = std::make_shared<Spy>(game, "P2");
+    game.add_player(p1);
+    game.add_player(p2);
+
+    force_turn1(game, "P2");
+    CHECK_THROWS_AS(p1->check_turn(), NotYourTurnException);
+
+    force_turn1(game, "P1");
+    CHECK_NOTHROW(p1->check_turn());
+}
+
+TEST_CASE("Player::revive") {
+    Game game;
+    auto p1 = std::make_shared<Spy>(game, "P1");
+    game.add_player(p1);
+
+    CHECK_THROWS_AS(p1->revive(), TargetNotEliminatedException);
+
+    p1->mark_eliminated();
+    CHECK(p1->is_eliminated());
+
+    CHECK_NOTHROW(p1->revive());
+    CHECK_FALSE(p1->is_eliminated());
+}
+
+TEST_CASE("Player::decrease_coins") {
+    Game game;
+    auto p1 = std::make_shared<Spy>(game, "P1");
+    game.add_player(p1);
+
+    p1->increase_coins(3);
+    CHECK(p1->get_coins() == 3);
+
+    CHECK_THROWS_AS(p1->decrease_coins(5), NotEnoughCoinsException);
+
+    CHECK_NOTHROW(p1->decrease_coins(2));
+    CHECK(p1->get_coins() == 1);
+}
+
+TEST_CASE("Player::increase_coins") {
+    Game game;
+    auto p1 = std::make_shared<Spy>(game, "P1");
+    game.add_player(p1);
+
+    CHECK(p1->get_coins() == 0);
+    p1->increase_coins(5);
+    CHECK(p1->get_coins() == 5);
+}
+
+TEST_CASE("Player::mark_sanctioned") {
+    Game game;
+    auto p1 = std::make_shared<Spy>(game, "P1");
+    game.add_player(p1);
+
+    CHECK_FALSE(p1->is_sanctioned());
+    p1->mark_sanctioned("P2");
+    CHECK(p1->is_sanctioned());
+}
+
+TEST_CASE("Player::clear_sanctioned") {
+    Game game;
+    auto p1 = std::make_shared<Spy>(game, "P1");
+    game.add_player(p1);
+
+    p1->mark_sanctioned("P2");
+    CHECK(p1->is_sanctioned());
+
+    p1->clear_sanctioned();
+    CHECK_FALSE(p1->is_sanctioned());
 }

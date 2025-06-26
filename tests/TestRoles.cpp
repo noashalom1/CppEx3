@@ -147,15 +147,20 @@ TEST_CASE("Baron::invest edge cases")
 TEST_CASE("General::undo_coup functionality")
 {
     Game game;
+    auto judge = std::make_shared<Judge>(game, "Judge");
     auto general = std::make_shared<General>(game, "General");
     auto target = std::make_shared<Spy>(game, "Target");
+
+    game.add_player(judge);
     game.add_player(general);
     game.add_player(target);
 
-    target->mark_eliminated();
+    judge->increase_coins(7);
+    judge->coup(target);
     general->increase_coins(5);
     CHECK_NOTHROW(general->undo_coup(target));
     CHECK_FALSE(target->is_eliminated());
+    CHECK_FALSE(game.is_in_coup_list(target->get_name()));
 }
 
 TEST_CASE("General::undo_coup - TargetNotEliminated")
@@ -193,6 +198,28 @@ TEST_CASE("General::undo_coup - ActionAlreadyUsedThisRound")
     g->mark_undo_coup_used();
     CHECK_THROWS_AS(g->undo_coup(t), ActionAlreadyUsedThisRoundException);
 }
+
+TEST_CASE("General::undo_coup throws if target not in coup_list") {
+    Game game;
+    auto general = std::make_shared<General>(game, "General");
+    auto spy = std::make_shared<Spy>(game, "Spy");
+    auto baron = std::make_shared<Baron>(game, "Baron");
+
+    game.add_player(general);
+    game.add_player(spy);
+    game.add_player(baron);
+
+    // Give general enough coins to perform undo_coup
+    general->increase_coins(5);
+
+    // Eliminate baron manually (not by coup)
+    baron->mark_eliminated();
+
+    // Try undo_coup on baron who is eliminated but NOT in coup_list
+    force_turn(game, "General");
+    CHECK_THROWS_AS(general->undo_coup(baron), NoCoupToUndoException);
+}
+
 
 TEST_CASE("Judge::undo_bribe functionality")
 {

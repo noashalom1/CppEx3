@@ -16,6 +16,19 @@
 using namespace coup;
 using namespace sf;
 
+/**
+ * @brief Displays the target selection screen.
+ *
+ * This method presents buttons for choosing a player from the provided list of targets.
+ * If no targets are available, it returns to the game state with an error message.
+ *
+ * Each button corresponds to a valid target and triggers the provided action upon selection.
+ * Also includes a "Back" button to cancel the selection and return to the main game screen.
+ *
+ * @param action The function to call when a target is selected.
+ * @param targets The list of potential target players.
+ * @param includeCurrentPlayer Whether the current player is allowed as a target.
+ */
 void GameGUI::showTargetSelection(std::function<void(const std::shared_ptr<Player>&)> action, const std::vector<std::shared_ptr<Player>> targets, bool includeCurrentPlayer)
 {
     state = GUIState::TargetSelection;

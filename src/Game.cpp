@@ -108,7 +108,7 @@ namespace coup
 
     /**
      * @brief Adds a new player to the game.
-     * @param player Pointer to the player to add.
+     * @param const std::shared_ptr<Player> Pointer to the player to add.
      * @throws MaxPlayersExceededException if more than 6 players.
      * @throws DuplicatePlayerNameException if name is already used.
      */
@@ -129,8 +129,14 @@ namespace coup
     }
 
     /**
-     * @brief Eliminates a player from the game.
-     * @param player Pointer to the player to eliminate.
+     * @brief Eliminates a player by name from the game.
+     *
+     * Marks the specified player as eliminated. If the player is not found,
+     * throws PlayerNotFoundException. If the current turn index exceeds the list
+     * after removal, it resets to 0.
+     *
+     * @param target The name of the player to eliminate.
+     * @throws PlayerNotFoundException if the player with the given name is not found.
      */
     void Game::remove_player(const std::string &target)
     {
@@ -167,6 +173,18 @@ namespace coup
     void Game::add_to_coup(const std::string &attacker, const std::string &target)
     {
         coup_list.emplace_back(attacker, target);
+    }
+
+    bool Game::is_in_coup_list(const std::string &target_name) const
+    {
+        for (const auto &entry : coup_list)
+        {
+            if (entry.second == target_name)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -236,20 +254,20 @@ namespace coup
 
         // If current player is the first living one in order → new round: reset flags for role-based undo abilities
         if (turn_index == min_alive_index)
+        {
+            current_round++;
+            for (std::shared_ptr<Player> &p : players_list)
             {
-                current_round++;
-                for (std::shared_ptr<Player> &p : players_list)
-                {
-                    if (p->role() == "Judge")
-                        static_cast<Judge *>(p.get())->reset_undo_bribe_flag();
-                    if (p->role() == "Governor")
-                        static_cast<Governor *>(p.get())->reset_undo_tax_flag();
-                    if (p->role() == "General")
-                        static_cast<General *>(p.get())->reset_undo_coup_flag();
-                    if (p->role() == "Spy")
-                        static_cast<Spy *>(p.get())->reset_peek_and_disable_flag();
-                }
+                if (p->role() == "Judge")
+                    static_cast<Judge *>(p.get())->reset_undo_bribe_flag();
+                if (p->role() == "Governor")
+                    static_cast<Governor *>(p.get())->reset_undo_tax_flag();
+                if (p->role() == "General")
+                    static_cast<General *>(p.get())->reset_undo_coup_flag();
+                if (p->role() == "Spy")
+                    static_cast<Spy *>(p.get())->reset_peek_and_disable_flag();
             }
+        }
 
         std::shared_ptr<Player> &current = players_list[turn_index];
 

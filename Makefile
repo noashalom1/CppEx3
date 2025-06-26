@@ -2,7 +2,7 @@
 
 # Compiler and flags
 CXX = g++
-CXXFLAGS = -Wall -Wextra -std=c++17
+CXXFLAGS = -Wall -Wextra -std=c++17 
 
 # SFML location (adjust if needed)
 SFML_LIB_DIR = /usr/lib
@@ -28,7 +28,7 @@ SRC_TESTABLE = src/Game.cpp \
                src/roles/Merchant.cpp
 
 # GUI source files
-SRC_GUI = src/main.cpp \
+SRC_GUI = main.cpp \
           src/gui/GameGUI.cpp \
           src/gui/InGame_GameGUI.cpp \
           src/gui/TargetSelection_GameGUI.cpp \
@@ -44,19 +44,21 @@ TEST_SRC = tests/TestGame.cpp tests/TestPlayer.cpp tests/TestRoles.cpp
 TARGET = Main
 TEST_TARGET = Test
 
-# Build and run GUI
+# Build GUI
 Main: $(SRC)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(TARGET) $(SRC) $(LIBS)
-	./$(TARGET)
 
-# Build and run tests (excluding GUI and main)
-test: $(SRC_TESTABLE) $(TEST_SRC)
+# Build test binary only (used by valgrind too)
+$(TEST_TARGET): $(SRC_TESTABLE) $(TEST_SRC)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(TEST_TARGET) $(SRC_TESTABLE) $(TEST_SRC) $(LIBS)
+
+# Run tests
+test: $(TEST_TARGET)
 	./$(TEST_TARGET)
 
-# Run Valgrind on unit tests only
-valgrind: test
-	valgrind --leak-check=full --track-origins=yes ./$(TEST_TARGET)
+# Run Valgrind on tests only
+valgrind: $(TEST_TARGET)
+	valgrind --leak-check=full --track-origins=yes ./$(TEST_TARGET) 2>&1 | grep "=="
 
 # Clean build files
 clean:

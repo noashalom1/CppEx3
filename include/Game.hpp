@@ -39,11 +39,12 @@ namespace coup
         int get_active_players_count() const; // Count active (non-eliminated) players
         int get_current_round() const { return current_round; } // Get current round number
 
-        size_t get_turn_index() const { return turn_index; }
+        size_t get_turn_index() const { return turn_index; } // Get turn index
         size_t get_global_turn_index() const { return global_turn_index; } // Get global turn index
 
         std::vector<std::tuple<std::string, std::string, int>> &get_action_history() { return action_history; } // Get action history
         std::vector<std::pair<std::string, std::string>> &get_coup_list() { return coup_list; } // Get list of coup actions
+        bool is_in_coup_list(const std::string &target_name) const; // Check if a player is in coup_list
         std::map<std::string, int> &get_tax_turns(); // Get tax turn map
 
         const std::string &get_last_arrested_name() const; // Get last arrested name

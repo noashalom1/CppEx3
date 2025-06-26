@@ -4,6 +4,7 @@ namespace coup
 {
     namespace GameExceptionStrings
     {
+        // Static error messages
         const char *NotYourTurn = "Not your turn.";
         const std::string Sanctioned = "You are sanctioned and cannot perform this action.";
         const std::string AlreadySanctioned = "Target is already sanctioned.";
@@ -58,6 +59,10 @@ namespace coup
         std::string NoRecentActionToUndo(const std::string &action)
         {
             return "No recent " + action + " by another player to undo.";
+        }
+        std::string NoCoupToUndo(const std::string &target)
+        {
+            return "No coup was found to undo for " + target + ".";
         }
     }
 }

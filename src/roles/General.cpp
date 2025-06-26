@@ -14,7 +14,7 @@ namespace coup
      * @param name Name of the player.
      */
     General::General(Game &game, const std::string &name) : Player(game, name) {}
-    
+
     /**
      * @brief Destructor for the General class.
      */
@@ -22,20 +22,20 @@ namespace coup
 
     /**
      * @brief Allows the General to undo a coup on a specific player.
-     * 
+     *
      * Revives the eliminated player and removes the coup record, at the cost of 5 coins.
      * Can only be used once per round.
-     * 
+     *
      * @param target The player to revive.
      * @return std::string Message indicating the action performed.
-     * 
+     *
      * @throws ActionAlreadyUsedThisRoundException If General already used undo this round.
      * @throws NotEnoughCoinsException If General has fewer than 5 coins.
      * @throws TargetNotEliminatedException If the target is not eliminated.
      */
-    std::string General::undo_coup(const std::shared_ptr<Player>& target)
+    std::string General::undo_coup(const std::shared_ptr<Player> &target)
     {
-        
+
         if (!can_undo_coup())
         {
             throw ActionAlreadyUsedThisRoundException(name, "UNDO COUP");
@@ -51,7 +51,11 @@ namespace coup
             throw TargetNotEliminatedException();
         }
 
-        coins -= 5; // Pay 5 coins
+        // Check if the target is in coup list
+        if (!game.is_in_coup_list(target->get_name()))
+            throw NoCoupToUndoException(target->get_name());
+
+        coins -= 5;       // Pay 5 coins
         target->revive(); // Revive the eliminated player
 
         // Remove the coup record targeting the revived player
@@ -64,11 +68,12 @@ namespace coup
             game.get_coup_list().end());
 
         mark_undo_coup_used(); // Mark ability as used this round
-        std::cout << name << " preformed undo-coup on " << target->get_name() << "! \n" << std::endl;                   
+        std::cout << name << " preformed undo-coup on " << target->get_name() << "! \n"
+                  << std::endl;
         return name + " undid coup on " + target->get_name();
     }
 
-     /**
+    /**
      * @brief Returns the role name as a string.
      * @return std::string The role name ("General").
      */

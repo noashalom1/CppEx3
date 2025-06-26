@@ -33,7 +33,7 @@ void GameGUI::drawPlayerList()
     for (const std::shared_ptr<Player>& player : game.get_all_players()) // Iterate over all players in the game
     {
         sf::Text info;
-        info.setFont(font);  // Use the main game font
+        info.setFont(font); // Use the main game font
         info.setCharacterSize(16); // Set readable text size
         // Construct the label with player name and role
         std::string label = player->get_name() + " - " + player->role();

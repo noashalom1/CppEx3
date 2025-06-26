@@ -17,6 +17,18 @@
 using namespace coup;
 using namespace sf;
 
+/**
+ * @brief Adds buttons for actions that are specific to players of a certain role.
+ *
+ * Each button is labeled with the action and the player's name, and invokes a given action.
+ * The function automatically filters out eliminated players, and supports error handling.
+ *
+ * @param role The role name to match (e.g., "Judge", "Spy").
+ * @param buttonPrefix Prefix to display on each button (e.g., "Undo Coup").
+ * @param startY The starting Y-position for placing buttons.
+ * @param actionPerPlayer The function to call when a button is clicked.
+ * @return int The number of buttons added.
+ */
 int GameGUI::addRoleActionButtons(const std::string &role,
                                   const std::string &buttonPrefix,
                                   float startY,
@@ -81,6 +93,14 @@ int GameGUI::addRoleActionButtons(const std::string &role,
     return count;
 }
 
+/**
+ * @brief Sets up all action buttons for the current player, based on their role.
+ *
+ * This includes general actions (gather, tax, bribe, arrest, sanction, coup),
+ * as well as role-specific special actions (e.g., Invest, Undo Tax, Undo Coup, etc.).
+ *
+ * The function also adds a "New Game" button that resets the game state.
+ */
 void GameGUI::setupButtons()
 {
     std::shared_ptr<Player> &p = game.get_current_player();
@@ -320,14 +340,14 @@ void GameGUI::setupButtons()
     Button newGameBtn("New Game", font, sf::Vector2f(150, 40), sf::Vector2f(800, 650));
     newGameBtn.setAction([this]()
                          {
-                             game = Game();           // Reset the game state
-                             tempNames.clear();       // Clear temporary names
-                             tempRoles.clear();       // Clear temporary roles
-                             buttons.clear();         // Clear buttons
-                             actionMessage.clear();   // Clear action messages
+                             game = Game(); // Reset the game state
+                             tempNames.clear(); // Clear temporary names
+                             tempRoles.clear(); // Clear temporary roles
+                             buttons.clear(); // Clear buttons
+                             actionMessage.clear(); // Clear action messages
                              setupError.clear(); // Clear setup error if exists
-                             inGameError.clear();     // Clear error messages
-                             targetButtons.clear();   // Clear target buttons if they exist
+                             inGameError.clear(); // Clear error messages
+                             targetButtons.clear(); // Clear target buttons if they exist
                              state = GUIState::Setup; // Return to setup screen
                          });
     buttons.push_back(newGameBtn);
