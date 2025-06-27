@@ -93,7 +93,7 @@ each assigned one of the following roles - randomly (can have more than one play
 - **Undo coup (by General only)**: pay 5 coins to prevent a coup against themselves or another player
 - **Peek & disable (by Spy only)**: undo the bribe action performed by another player
 
-## ♻️ Additional Features
+### Additional Features
 - `invest (by Baron only)`: can invest 3 coins and receive 6 coins in return
 - `Merchant` gains 1 extra coin at the beginning of their turn if they have at least 3 coins
 - Players cannot target themselves.
