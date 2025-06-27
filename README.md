@@ -141,7 +141,6 @@ make valgrind
 
    ```bash
    git clone https://github.com/noashalom1/CppEx3.git
-   cd CppEx3
    ```
 
 2. Build the GUI executable:
